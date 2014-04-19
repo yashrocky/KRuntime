@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Net.Runtime;
 using Microsoft.Net.Runtime.FileSystem;
 using Microsoft.Net.Runtime.Loader;
+using Microsoft.Net.Runtime.Loader.MSBuildProject;
 using Microsoft.Net.Runtime.Loader.NuGet;
 using Microsoft.Net.Runtime.Roslyn;
 using NuGet;
@@ -277,10 +278,12 @@ namespace Microsoft.Net.Project
             var compositeResourceProvider = new CompositeResourceProvider(new IResourceProvider[] { resxProvider, embeddedResourceProvider });
 
             var nugetDependencyResolver = new NuGetDependencyResolver(projectDir);
+            var msbuildDependencyProvider = new MSBuildDependencyProvider(projectResolver);
             var gacDependencyExporter = new GacLibraryExportProvider(globalAssemblyCache);
             var compositeDependencyExporter = new CompositeLibraryExportProvider(new ILibraryExportProvider[] { 
                 gacDependencyExporter, 
-                nugetDependencyResolver 
+                nugetDependencyResolver,
+                new MSBuildLibraryExportProvider(msbuildDependencyProvider)
             });
 
             var roslynCompiler = new RoslynCompiler(projectResolver,
@@ -289,7 +292,8 @@ namespace Microsoft.Net.Project
 
             var projectReferenceResolver = new ProjectReferenceDependencyProvider(projectResolver);
             var dependencyWalker = new DependencyWalker(new IDependencyProvider[] { 
-                projectReferenceResolver, 
+                projectReferenceResolver,
+                msbuildDependencyProvider,
                 nugetDependencyResolver 
             });
 
@@ -299,7 +303,7 @@ namespace Microsoft.Net.Project
                                                                       compositeResourceProvider,
                                                                       globalAssemblyCache,
                                                                       projectReferenceResolver.Dependencies);
-
+            
             packagePaths = nugetDependencyResolver.PackageAssemblyPaths;
 
             return roslynArtifactsProducer;

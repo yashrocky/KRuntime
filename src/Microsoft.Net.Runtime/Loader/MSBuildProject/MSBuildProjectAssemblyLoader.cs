@@ -1,113 +1,84 @@
-﻿#if MSBUILD
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.Net.Runtime.FileSystem;
 
 namespace Microsoft.Net.Runtime.Loader.MSBuildProject
 {
-    public class MSBuildProjectAssemblyLoader : IAssemblyLoader
+    public class MSBuildEngine
     {
-        private readonly string _solutionDir;
-        private readonly IFileWatcher _watcher;
-
         private readonly static string[] _msBuildPaths = new string[] {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"MSBuild\12.0\Bin\MSBuild.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Microsoft.NET\Framework\v4.0.30319\MSBuild.exe")
+            Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), @"MSBuild\12.0\Bin\MSBuild.exe"),
+            Path.Combine(Environment.ExpandEnvironmentVariables("%Windows%"), @"Microsoft.NET\Framework\v4.0.30319\MSBuild.exe")
         };
 
-        private readonly IAssemblyLoaderEngine _loaderEngine;
+        private readonly IFileWatcher _watcher;
 
-        public MSBuildProjectAssemblyLoader(IAssemblyLoaderEngine loaderEngine, string solutionDir, IFileWatcher watcher)
+        public MSBuildEngine(IFileWatcher watcher)
         {
-            _solutionDir = solutionDir;
             _watcher = watcher;
-            _loaderEngine = loaderEngine;
         }
 
-        public AssemblyLoadResult Load(LoadContext loadContext)
+        public string BuildProject(string name, string projectFile)
         {
-            string name = loadContext.AssemblyName;
+            string msbuildPath = null;
 
-            string targetDir = Path.Combine(_solutionDir, name);
-
-            // Bail if there's a project settings file
-            if (Project.HasProjectFile(targetDir))
+            foreach (var exePath in _msBuildPaths)
             {
-                return null;
+                if (File.Exists(exePath))
+                {
+                    msbuildPath = exePath;
+                    break;
+                }
             }
 
-            string projectFile = Path.Combine(targetDir, name + ".csproj");
-
-            if (!File.Exists(projectFile))
+            if (string.IsNullOrEmpty(msbuildPath))
             {
-                // There's a solution so check for a project one deeper
-                if (File.Exists(Path.Combine(targetDir, name + ".sln")))
-                {
-                    // Is there a project file here?
-                    projectFile = Path.Combine(targetDir, name, name + ".csproj");
-
-                    if (!File.Exists(projectFile))
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
 
             WatchProject(projectFile);
 
             string projectDir = Path.GetDirectoryName(projectFile);
+            var executable = new Executable(msbuildPath, projectDir);
 
-            foreach (var exePath in _msBuildPaths)
+            string outputFile = null;
+            var process = executable.Execute(line =>
             {
-                if (!File.Exists(exePath))
+                // Look for {project} -> {outputPath}
+                int index = line.IndexOf('-');
+
+                System.Diagnostics.Trace.TraceInformation("[{0}]:{1}", GetType().Name, line);
+
+                if (index != -1 && index + 1 < line.Length && line[index + 1] == '>')
                 {
-                    continue;
-                }
-
-                var executable = new Executable(exePath, projectDir);
-
-                string outputFile = null;
-                var process = executable.Execute(line =>
-                {
-                    // Look for {project} -> {outputPath}
-                    int index = line.IndexOf('-');
-
-                    if (index != -1 && index + 1 < line.Length && line[index + 1] == '>')
+                    string projectName = line.Substring(0, index).Trim();
+                    if (projectName.Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
-                        string projectName = line.Substring(0, index).Trim();
-                        if (projectName.Equals(name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            outputFile = line.Substring(index + 2).Trim();
-                        }
+                        outputFile = line.Substring(index + 2).Trim();
                     }
-
-                    return true;
-                },
-                _ => true,
-                Encoding.UTF8,
-                projectFile + " /m");
-
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    // REVIEW: Should this throw?
-                    return null;
                 }
 
-                return new AssemblyLoadResult(_loaderEngine.LoadFile(outputFile));
+                return true;
+            },
+            _ => true,
+            "\"" + projectFile + "\"" + " /m /p:Configuration=Debug;Platform=AnyCPU");
+
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                // REVIEW: Should this throw?
+                return null;
             }
 
-            return null;
+            return outputFile;
         }
 
         private void WatchProject(string projectFile)
@@ -119,6 +90,8 @@ namespace Microsoft.Net.Runtime.Loader.MSBuildProject
             }
 
             string projectDir = Path.GetDirectoryName(projectFile);
+
+            _watcher.WatchFile(Path.Combine(projectDir, "packages.config"));
 
             XDocument document = null;
             using (var stream = File.OpenRead(projectFile))
@@ -176,5 +149,88 @@ namespace Microsoft.Net.Runtime.Loader.MSBuildProject
             return XName.Get(name, "http://schemas.microsoft.com/developer/msbuild/2003");
         }
     }
+
+    public class MSBuildLibraryExportProvider : ILibraryExportProvider
+    {
+        private readonly MSBuildDependencyProvider _dependencyProvider;
+
+        public MSBuildLibraryExportProvider(MSBuildDependencyProvider dependencyProvider)
+        {
+            _dependencyProvider = dependencyProvider;
+        }
+
+        public ILibraryExport GetLibraryExport(string name, FrameworkName targetFramework)
+        {
+            MsBuildProject project;
+            if (!_dependencyProvider.ResolvedProjects.TryGetValue(name, out project))
+            {
+                return null;
+            }
+
+            var engine = new MSBuildEngine(NoopWatcher.Instance);
+
+            var path = engine.BuildProject(name, project.Path);
+
+            if (path == null)
+            {
+                return null;
+            }
+
+            Trace.TraceInformation("[{0}]: Resolved export path {1}", GetType().Name, path);
+
+            return new LibraryExport(path);
+        }
+    }
+
+    public class MSBuildProjectAssemblyLoader : IAssemblyLoader
+    {
+        private readonly MSBuildEngine _buildEngine;
+
+        private readonly static string[] _msBuildPaths = new string[] {
+            Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), @"MSBuild\12.0\Bin\MSBuild.exe"),
+            Path.Combine(Environment.ExpandEnvironmentVariables("%Windows%"), @"Microsoft.NET\Framework\v4.0.30319\MSBuild.exe")
+        };
+
+        private readonly IAssemblyLoaderEngine _loaderEngine;
+        private readonly MSBuildDependencyProvider _dependencyProvider;
+
+        public MSBuildProjectAssemblyLoader(IAssemblyLoaderEngine loaderEngine,
+                                            MSBuildEngine buildEngine,
+                                            MSBuildDependencyProvider dependencyProvider)
+        {
+            _dependencyProvider = dependencyProvider;
+            _buildEngine = buildEngine;
+            _loaderEngine = loaderEngine;
+        }
+
+        public AssemblyLoadResult Load(LoadContext loadContext)
+        {
+            string name = loadContext.AssemblyName;
+
+            MsBuildProject project;
+            if (!_dependencyProvider.ResolvedProjects.TryGetValue(name, out project))
+            {
+                return null;
+            }
+
+            var path = _buildEngine.BuildProject(name, project.Path);
+
+            if (path == null)
+            {
+                return null;
+            }
+
+            // HACK so we don't need to worry about locked files
+            var assemblyBytes = File.ReadAllBytes(path);
+            var pdbPath = Path.ChangeExtension(path, ".pdb");
+            byte[] pdbBytes = null;
+
+            if (File.Exists(pdbPath))
+            {
+                pdbBytes = File.ReadAllBytes(pdbPath);
+            }
+
+            return new AssemblyLoadResult(_loaderEngine.LoadBytes(assemblyBytes, pdbBytes));
+        }
+    }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if MSBUILD
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -15,8 +14,6 @@ namespace Microsoft.Net.Runtime
         {
             Path = path;
             WorkingDirectory = workingDirectory;
-            EnvironmentVariables = new Dictionary<string, string>();
-            Encoding = Encoding.UTF8;
         }
 
         public bool IsAvailable
@@ -31,20 +28,15 @@ namespace Microsoft.Net.Runtime
 
         public string Path { get; private set; }
 
-        public IDictionary<string, string> EnvironmentVariables { get; set; }
-
-        public Encoding Encoding { get; set; }
-
         public Process Execute(string arguments, params object[] args)
         {
             return Execute(s => { Console.WriteLine(s); return true; },
                            s => { Console.Error.WriteLine(s); return true; },
-                           Encoding.UTF8,
                            arguments,
                            args);
         }
 
-        public Process Execute(Func<string, bool> onWriteOutput, Func<string, bool> onWriteError, Encoding encoding, string arguments, params object[] args)
+        public Process Execute(Func<string, bool> onWriteOutput, Func<string, bool> onWriteError, string arguments, params object[] args)
         {
             Process process = CreateProcess(arguments, args);
 
@@ -59,8 +51,7 @@ namespace Microsoft.Net.Runtime
                 {
                     if (onWriteOutput(e.Data))
                     {
-                        var data = encoding.GetBytes(e.Data);
-                        outputBuffer.AppendLine(Encoding.UTF8.GetString(data, 0, data.Length));
+                        outputBuffer.AppendLine(e.Data);
                     }
                 }
             };
@@ -71,8 +62,7 @@ namespace Microsoft.Net.Runtime
                 {
                     if (onWriteError(e.Data))
                     {
-                        var data = encoding.GetBytes(e.Data);
-                        errorBuffer.AppendLine(Encoding.UTF8.GetString(data, 0, data.Length));
+                        errorBuffer.AppendLine(e.Data);
                     }
                 }
             };
@@ -100,22 +90,13 @@ namespace Microsoft.Net.Runtime
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
+#if NET45
                 WindowStyle = ProcessWindowStyle.Hidden,
                 UseShellExecute = false,
                 ErrorDialog = false,
+#endif
                 Arguments = arguments
             };
-
-            if (Encoding != null)
-            {
-                psi.StandardOutputEncoding = Encoding;
-                psi.StandardErrorEncoding = Encoding;
-            }
-
-            foreach (var pair in EnvironmentVariables)
-            {
-                psi.EnvironmentVariables[pair.Key] = pair.Value;
-            }
 
             var process = new Process()
             {
@@ -126,4 +107,3 @@ namespace Microsoft.Net.Runtime
         }
     }
 }
-#endif

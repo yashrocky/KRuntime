@@ -32,6 +32,7 @@
     <Compile Include="DependencyManagement\LibraryDescription.cs" />
     <Compile Include="DependencyManagement\LibraryInformation.cs" />
     <Compile Include="DependencyManagement\LibraryManager.cs" />
+    <Compile Include="DependencyManagement\MSBuildDependencyProvider.cs" />
     <Compile Include="DependencyManagement\ProjectReferenceDependencyProvider.cs" />
     <Compile Include="DependencyManagement\WalkContext.cs" />
     <Compile Include="DictionaryExtensions.cs" />

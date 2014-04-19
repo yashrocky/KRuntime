@@ -15,6 +15,14 @@ namespace Microsoft.Net.Runtime
             _searchPaths = ResolveSearchPaths(projectPath, rootPath);
         }
 
+        public IList<string> SearchPaths
+        {
+            get
+            {
+                return _searchPaths;
+            }
+        }
+
         public bool TryResolveProject(string name, out Project project)
         {
             project = _searchPaths.Select(path => Path.Combine(path, name))

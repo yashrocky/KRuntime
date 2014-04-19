@@ -8,6 +8,7 @@ using System.Runtime.Versioning;
 using Microsoft.Net.Runtime.Common.DependencyInjection;
 using Microsoft.Net.Runtime.FileSystem;
 using Microsoft.Net.Runtime.Loader;
+using Microsoft.Net.Runtime.Loader.MSBuildProject;
 using Microsoft.Net.Runtime.Loader.NuGet;
 
 namespace Microsoft.Net.Runtime
@@ -114,6 +115,7 @@ namespace Microsoft.Net.Runtime
             var projectResolver = new ProjectResolver(_projectDir, rootDirectory);
 
             var nugetDependencyResolver = new NuGetDependencyResolver(_projectDir, options.PackageDirectory);
+            var msbuildDependencyProvider = new MSBuildDependencyProvider(projectResolver);
             var nugetLoader = new NuGetAssemblyLoader(_loaderEngine, nugetDependencyResolver);
             var globalAssemblyCache = new DefaultGlobalAssemblyCache();
 
@@ -126,15 +128,23 @@ namespace Microsoft.Net.Runtime
             // GAC
             libraryExporters.Add(new GacLibraryExportProvider(globalAssemblyCache));
 
+            // MSBuild style projects
+            libraryExporters.Add(new MSBuildLibraryExportProvider(msbuildDependencyProvider));
+
             // NuGet exporter
             libraryExporters.Add(nugetDependencyResolver);
 
             var dependencyExporter = new CompositeLibraryExportProvider(libraryExporters);
             var roslynLoader = new LazyRoslynAssemblyLoader(_loaderEngine, projectResolver, _watcher, dependencyExporter, globalAssemblyCache);
+            
 
             // Project.json projects
             loaders.Add(roslynLoader);
             dependencyProviders.Add(new ProjectReferenceDependencyProvider(projectResolver));
+
+            // Msbuild
+            loaders.Add(new MSBuildProjectAssemblyLoader(_loaderEngine, new MSBuildEngine(_watcher), msbuildDependencyProvider));
+            dependencyProviders.Add(msbuildDependencyProvider);
 
             // NuGet packages
             loaders.Add(nugetLoader);

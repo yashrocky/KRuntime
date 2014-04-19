@@ -9,6 +9,7 @@ using Microsoft.Net.DesignTimeHost.Models.IncomingMessages;
 using Microsoft.Net.DesignTimeHost.Models.OutgoingMessages;
 using Microsoft.Net.Runtime;
 using Microsoft.Net.Runtime.FileSystem;
+using Microsoft.Net.Runtime.Loader.MSBuildProject;
 using Microsoft.Net.Runtime.Loader.NuGet;
 using Microsoft.Net.Runtime.Roslyn;
 using Newtonsoft.Json.Linq;
@@ -335,10 +336,12 @@ namespace Microsoft.Net.DesignTimeHost
             var projectResolver = new ProjectResolver(projectDir, rootDirectory);
 
             var nugetDependencyResolver = new NuGetDependencyResolver(projectDir);
+            var msbuildDependencyProvider = new MSBuildDependencyProvider(projectResolver);
             var gacDependencyExporter = new GacLibraryExportProvider(globalAssemblyCache);
             var compositeDependencyExporter = new CompositeLibraryExportProvider(new ILibraryExportProvider[] { 
                 gacDependencyExporter, 
-                nugetDependencyResolver 
+                new MSBuildLibraryExportProvider(msbuildDependencyProvider),
+                nugetDependencyResolver,
             });
 
             var roslynCompiler = new RoslynCompiler(projectResolver,
@@ -350,6 +353,7 @@ namespace Microsoft.Net.DesignTimeHost
 
             var dependencyWalker = new DependencyWalker(new IDependencyProvider[] { 
                 new ProjectReferenceDependencyProvider(projectResolver),
+                msbuildDependencyProvider,
                 nugetDependencyResolver,
                 new UnresolvedDependencyProvider() // A catch all for unresolved dependencies
             });
