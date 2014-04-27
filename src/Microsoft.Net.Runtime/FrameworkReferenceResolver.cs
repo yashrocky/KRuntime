@@ -103,7 +103,7 @@ namespace Microsoft.Net.Runtime
             {
                 // Since mono is compatible with net45, we make reference assemblies
                 // work if you have a monoXX configuration
-                var monoFrameworkMoniker = new FrameworkName("Mono", frameworkName.Version, frameworkName.Profile);
+                var monoFrameworkMoniker = new FrameworkName("Mono", frameworkName.Version);
                 _cache[monoFrameworkMoniker] = frameworkInfo;
             }
 

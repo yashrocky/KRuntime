@@ -69,7 +69,8 @@ namespace Microsoft.Net.Runtime.Roslyn
                                                    .Select(d => d.Name)
                                                    .ToList();
 
-            if (VersionUtility.IsDesktop(targetFramework))
+            if (VersionUtility.IsDesktop(targetFramework) ||
+                VersionUtility.IsMono(targetFramework))
             {
                 // mscorlib is ok
                 dependencies.Add("mscorlib");
