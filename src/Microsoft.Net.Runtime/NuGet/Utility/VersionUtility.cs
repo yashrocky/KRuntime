@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Net.Runtime;
 using NuGet.Resources;
 using CompatibilityMapping = System.Collections.Generic.Dictionary<string, string[]>;
 
@@ -106,6 +107,11 @@ namespace NuGet
         public static bool IsDesktop(FrameworkName frameworkName)
         {
             return frameworkName.Identifier == DefaultTargetFramework.Identifier;
+        }
+
+        public static bool IsMono(FrameworkName frameworkName)
+        {
+            return frameworkName.Identifier.Equals("Mono", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -742,7 +748,13 @@ namespace NuGet
             targetFrameworkName = NormalizeFrameworkName(targetFrameworkName);
             frameworkName = NormalizeFrameworkName(frameworkName);
 
-            if (!frameworkName.Identifier.Equals(targetFrameworkName.Identifier, StringComparison.OrdinalIgnoreCase))
+            // TODO: Move this into a generic dictionary
+            if (frameworkName.Identifier.Equals("mono", StringComparison.OrdinalIgnoreCase) &&
+                targetFrameworkName.Identifier.Equals(NetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase))
+            {
+                // Mono is compatible with net45 but not vice versa
+            }
+            else if (!frameworkName.Identifier.Equals(targetFrameworkName.Identifier, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1047,6 +1059,11 @@ namespace NuGet
                 { "wpa", "WindowsPhoneApp"},
                 { "k", "K" }
             };
+
+            if (PlatformHelper.IsMono)
+            {
+                frameworks["mono"] = "Mono";
+            }
 
             return frameworks;
         }

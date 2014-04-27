@@ -54,6 +54,10 @@ namespace klr.host
                 {
                     identifierPart = ".NETFramework";
                 }
+                else if (identifierPart.Equals("mono", StringComparison.OrdinalIgnoreCase))
+                {
+                    identifierPart = "Mono";
+                }
                 else if (identifierPart.Equals("k", StringComparison.OrdinalIgnoreCase))
                 {
                     identifierPart = "K";

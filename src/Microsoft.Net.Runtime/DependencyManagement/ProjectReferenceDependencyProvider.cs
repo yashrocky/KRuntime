@@ -30,7 +30,8 @@ namespace Microsoft.Net.Runtime
             // This never returns null
             var configDependencies = project.GetTargetFrameworkConfiguration(targetFramework).Dependencies;
 
-            if (VersionUtility.IsDesktop(targetFramework))
+            if (VersionUtility.IsDesktop(targetFramework) || 
+                VersionUtility.IsMono(targetFramework))
             {
                 // mscorlib is ok
                 configDependencies.Add(new Library { Name = "mscorlib" });

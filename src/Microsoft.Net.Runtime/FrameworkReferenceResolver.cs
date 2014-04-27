@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
+using NuGet;
 
 namespace Microsoft.Net.Runtime
 {
@@ -95,6 +96,15 @@ namespace Microsoft.Net.Runtime
                 {
                     frameworkInfo.Assemblies.Add(pair.Item1, pair.Item2);
                 }
+            }
+
+            if (PlatformHelper.IsMono &&
+                VersionUtility.IsDesktop(frameworkName))
+            {
+                // Since mono is compatible with net45, we make reference assemblies
+                // work if you have a monoXX configuration
+                var monoFrameworkMoniker = new FrameworkName("Mono", frameworkName.Version, frameworkName.Profile);
+                _cache[monoFrameworkMoniker] = frameworkInfo;
             }
 
             _cache[frameworkName] = frameworkInfo;

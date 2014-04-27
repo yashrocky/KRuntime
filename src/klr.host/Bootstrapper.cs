@@ -66,7 +66,7 @@ namespace klr.host
 #endif
 
             var framework = Environment.GetEnvironmentVariable("TARGET_FRAMEWORK");
-            var targetFramework = FrameworkNameUtility.ParseFrameworkName(framework ?? (PlatformHelper.IsMono ? "net45" : "net451"));
+            var targetFramework = FrameworkNameUtility.ParseFrameworkName(framework ?? (PlatformHelper.IsMono ? "mono45" : "net451"));
 
             var applicationEnvironment = new ApplicationEnvironment(applicationBaseDirectory,
                                                                     targetFramework,

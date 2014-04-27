@@ -273,6 +273,14 @@ namespace Microsoft.Net.Runtime
                     var config = new TargetFrameworkConfiguration();
 
                     config.FrameworkName = ParseFrameworkName(configuration.Key);
+
+                    // If the framework is unsupported then skip it
+                    if (config.FrameworkName == VersionUtility.UnsupportedFrameworkName)
+                    {
+                        // REVIEW: Should we warn here?
+                        continue;
+                    }
+
                     var properties = configuration.Value.Value<JObject>();
 
                     config.Dependencies = new List<Library>();
