@@ -78,7 +78,7 @@ namespace Microsoft.Framework.PackageManager.Restore.NuGet
 
         public async Task<Stream> OpenNupkgStreamAsync(PackageInfo package)
         {
-            return _repository.FindPackage(package.Id, package.Version).GetStream();
+            return _repository.FindPackage(package.Id, package.Version.SemanticVersion).GetStream();
         }
     }
 }
