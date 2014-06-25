@@ -27,7 +27,7 @@ namespace Microsoft.Framework.Runtime
             return _projectResolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
         }
 
-        public LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName targetFramework)
+        public LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName targetFramework)
         {
             Project project;
 

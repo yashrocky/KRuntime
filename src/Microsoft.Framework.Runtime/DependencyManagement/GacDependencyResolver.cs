@@ -30,7 +30,7 @@ namespace Microsoft.Framework.Runtime
             return GetGacSearchPaths().Select(p => Path.Combine(p, "{name}", "{version}", "{name}.dll"));
         }
 
-        public LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName targetFramework)
+        public LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName targetFramework)
         {
             if (PlatformHelper.IsMono)
             {
@@ -50,7 +50,7 @@ namespace Microsoft.Framework.Runtime
 
             SemanticVersion assemblyVersion = VersionUtility.GetAssemblyVersion(path);
 
-            if (version == null || version == assemblyVersion)
+            if (version == null || version.SemanticVersion == assemblyVersion)
             {
                 _resolvedPaths[name] = path;
 

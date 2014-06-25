@@ -11,17 +11,17 @@ using NuGet.Resources;
 
 namespace NuGet
 {
-    public class LocalPackageRepository
+    public class PackageRepository
     {
         private readonly ILookup<string, IPackage> _cache;
 
-        public LocalPackageRepository(string physicalPath)
+        public PackageRepository(string physicalPath)
             : this(new DefaultPackagePathResolver(physicalPath),
                    new PhysicalFileSystem(physicalPath))
         {
         }
 
-        public LocalPackageRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem)
+        public PackageRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem)
         {
             if (pathResolver == null)
             {

@@ -373,7 +373,7 @@ namespace Microsoft.Framework.Runtime
             public bool IsBestVersion(Item item)
             {
                 var entry = GetEntry(item);
-                return entry.List.All(known => item.Key.Version >= known.Key.Version);
+                return entry.List.All(known => item.Key.Version.SemanticVersion >= known.Key.Version.SemanticVersion);
             }
         }
     }

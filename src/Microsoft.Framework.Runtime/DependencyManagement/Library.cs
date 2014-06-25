@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Runtime
     {
         public string Name { get; set; }
 
-        public SemanticVersion Version { get; set; }
+        public SemanticVersion2 Version { get; set; }
 
         public override string ToString()
         {

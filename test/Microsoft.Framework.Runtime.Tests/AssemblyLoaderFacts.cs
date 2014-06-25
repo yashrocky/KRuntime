@@ -181,7 +181,7 @@ namespace Loader.Tests
             return null;
         }
 
-        public LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName frameworkName)
+        public LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName frameworkName)
         {
             Trace.WriteLine(string.Format("StubAssemblyLoader.GetDependencies {0} {1} {2}", name, version, frameworkName));
             Entry entry;
@@ -235,7 +235,7 @@ namespace Loader.Tests
 
             public Entry Needs(string name, string version)
             {
-                Dependencies.Add(new Library { Name = name, Version = new SemanticVersion(version) });
+                Dependencies.Add(new Library { Name = name, Version = SemanticVersion2.Parse(version) });
                 return this;
             }
         }

@@ -188,9 +188,20 @@ namespace Microsoft.Framework.Runtime
             // Metadata properties
             var version = rawProject["version"];
             var authors = rawProject["authors"];
+            SemanticVersion2 projectVersion = version == null ? new SemanticVersion("1.0.0") : SemanticVersion2.Parse(version.Value<string>());
+
+            // Specify the project's concrete version
+            if (projectVersion.IsSnapshot)
+            {
+                var buildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION") ?? "SNAPSHOT";
+                project.Version = projectVersion.SpecifySnapshot(buildVersion);
+            }
+            else
+            {
+                project.Version = projectVersion.SemanticVersion;
+            }
 
             project.Name = projectName;
-            project.Version = version == null ? new SemanticVersion("1.0.0") : new SemanticVersion(version.Value<string>());
             project.Description = GetValue<string>(rawProject, "description");
             project.Authors = authors == null ? new string[] { } : authors.ToObject<string[]>();
             project.Dependencies = new List<Library>();
@@ -230,12 +241,6 @@ namespace Microsoft.Framework.Runtime
                 {
                     project.Commands[command.Key] = command.Value.ToObject<string>();
                 }
-            }
-
-            if (project.Version.IsSnapshot)
-            {
-                var buildVersion = Environment.GetEnvironmentVariable("K_BUILD_VERSION") ?? "SNAPSHOT";
-                project.Version = project.Version.SpecifySnapshot(buildVersion);
             }
 
             project.BuildTargetFrameworkConfigurations(rawProject);
@@ -297,11 +302,11 @@ namespace Microsoft.Framework.Runtime
 
                     string dependencyVersionValue = dependency.Value.Value<string>();
 
-                    SemanticVersion dependencyVersion = null;
+                    SemanticVersion2 dependencyVersion = null;
 
                     if (!String.IsNullOrEmpty(dependencyVersionValue))
                     {
-                        dependencyVersion = SemanticVersion.Parse(dependencyVersionValue);
+                        dependencyVersion = SemanticVersion2.Parse(dependencyVersionValue);
                     }
 
                     results.Add(new Library

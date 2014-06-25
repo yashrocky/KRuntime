@@ -37,7 +37,7 @@ namespace Microsoft.Framework.PackageManager
             PackageInfo bestResult = null;
             foreach (var result in results)
             {
-                if (VersionUtility.ShouldUseConsidering(
+                if (SemanticVersion2.ShouldUseConsidering(
                     current: bestResult == null ? null : bestResult.Version,
                     considering: result.Version,
                     ideal: library.Version))

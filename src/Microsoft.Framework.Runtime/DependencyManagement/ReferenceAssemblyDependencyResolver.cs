@@ -36,7 +36,7 @@ namespace Microsoft.Framework.Runtime
             return Enumerable.Empty<string>();
         }
 
-        public LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName targetFramework)
+        public LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName targetFramework)
         {
             string path;
             if (!FrameworkResolver.TryGetAssembly(name, targetFramework, out path))
@@ -46,7 +46,7 @@ namespace Microsoft.Framework.Runtime
 
             SemanticVersion assemblyVersion = VersionUtility.GetAssemblyVersion(path);
 
-            if (version == null || version == assemblyVersion)
+            if (version == null || version.SemanticVersion == assemblyVersion)
             {
                 _resolvedPaths[name] = path;
 

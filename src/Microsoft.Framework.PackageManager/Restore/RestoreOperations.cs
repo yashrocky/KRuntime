@@ -136,7 +136,7 @@ namespace Microsoft.Framework.PackageManager
                 if (remoteMatch != null)
                 {
                     var localMatch = await FindLibraryByVersion(context, remoteMatch.Library, context.LocalLibraryProviders);
-                    if (localMatch != null && localMatch.Library.Version.Equals(remoteMatch.Library.Version))
+                    if (localMatch != null && localMatch.Library.Version.SemanticVersion.Equals(remoteMatch.Library.Version.SemanticVersion))
                     {
                         return localMatch;
                     }
@@ -146,7 +146,7 @@ namespace Microsoft.Framework.PackageManager
             else
             {
                 var localMatch = await FindLibraryByVersion(context, library, context.LocalLibraryProviders);
-                if (localMatch != null && localMatch.Library.Version.Equals(library.Version))
+                if (localMatch != null && localMatch.Library.Version.SemanticVersion.Equals(library.Version.SemanticVersion))
                 {
                     return localMatch;
                 }
@@ -158,7 +158,7 @@ namespace Microsoft.Framework.PackageManager
                 }
                 if (localMatch != null && remoteMatch != null)
                 {
-                    if (VersionUtility.ShouldUseConsidering(
+                    if (SemanticVersion2.ShouldUseConsidering(
                         current: localMatch.Library.Version,
                         considering: remoteMatch.Library.Version,
                         ideal: library.Version))
@@ -200,7 +200,7 @@ namespace Microsoft.Framework.PackageManager
             WalkProviderMatch bestMatch = null;
             foreach (var match in matches)
             {
-                if (VersionUtility.ShouldUseConsidering(
+                if (SemanticVersion2.ShouldUseConsidering(
                     current: (bestMatch == null || bestMatch.Library == null) ? null : bestMatch.Library.Version,
                     considering: (match == null || match.Library == null) ? null : match.Library.Version,
                     ideal: library.Version))
@@ -222,7 +222,7 @@ namespace Microsoft.Framework.PackageManager
             WalkProviderMatch bestMatch = null;
             foreach (var match in matches)
             {
-                if (VersionUtility.ShouldUseConsidering(
+                if (SemanticVersion2.ShouldUseConsidering(
                     current: (bestMatch == null || bestMatch.Library == null) ? null : bestMatch.Library.Version,
                     considering: (match == null || match.Library == null) ? null : match.Library.Version,
                     ideal: library.Version))

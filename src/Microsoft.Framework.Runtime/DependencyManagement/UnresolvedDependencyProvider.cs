@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Runtime
             UnresolvedDependencies = Enumerable.Empty<LibraryDescription>();
         }
 
-        public LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName targetFramework)
+        public LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName targetFramework)
         {
             return new LibraryDescription
             {

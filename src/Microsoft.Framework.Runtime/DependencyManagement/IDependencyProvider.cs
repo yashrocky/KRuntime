@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Runtime
 {
     public interface IDependencyProvider
     {
-        LibraryDescription GetDescription(string name, SemanticVersion version, FrameworkName targetFramework);
+        LibraryDescription GetDescription(string name, SemanticVersion2 version, FrameworkName targetFramework);
 
         void Initialize(IEnumerable<LibraryDescription> dependencies, FrameworkName targetFramework);
 
