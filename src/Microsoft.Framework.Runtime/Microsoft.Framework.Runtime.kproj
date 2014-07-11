@@ -118,7 +118,6 @@
     <Compile Include="NuGet\Utility\PackageEqualityComparer.cs" />
     <Compile Include="NuGet\Utility\PackageHelper.cs" />
     <Compile Include="NuGet\Utility\PackageIdValidator.cs" />
-    <Compile Include="NuGet\Utility\PathValidator.cs" />
     <Compile Include="NuGet\Utility\ReadOnlyHashSet.cs" />
     <Compile Include="NuGet\Utility\UriUtility.cs" />
     <Compile Include="NuGet\Utility\VersionSpec.cs" />

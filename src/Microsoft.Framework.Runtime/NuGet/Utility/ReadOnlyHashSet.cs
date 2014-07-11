@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace NuGet
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix", Justification="A hash set should not end in Collections")]
-    public class ReadOnlyHashSet<T> : ISet<T>
+    internal class ReadOnlyHashSet<T> : ISet<T>
     {
         private readonly ISet<T> _backingSet;
 

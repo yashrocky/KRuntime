@@ -29,6 +29,7 @@
     <Compile Include="Impl\Extensions\ObjectExtensions.cs" />
     <Compile Include="Impl\Extensions\StringExtensions.cs" />
     <Compile Include="Impl\PathUtility.cs" />
+    <Compile Include="Impl\PathValidator.cs" />
     <Compile Include="Impl\PlatformHelper.cs" />
     <Compile Include="Impl\Trace.cs" />
   </ItemGroup>
