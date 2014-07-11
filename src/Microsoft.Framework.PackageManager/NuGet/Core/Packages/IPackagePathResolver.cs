@@ -4,7 +4,7 @@
 
 namespace NuGet
 {
-    internal interface IPackagePathResolver
+    public interface IPackagePathResolver
     {
         /// <summary>
         /// Gets the physical installation path of a package

@@ -14,13 +14,13 @@ namespace NuGet
     /// <summary>
     /// Summary description for UnzippedPackage
     /// </summary>
-    public class UnzippedPackage : LocalPackage
+    internal class UnzippedPackage : LocalPackage
     {
         private Dictionary<string, PhysicalPackageFile> _files;
         private readonly IFileSystem _fileSystem;
         private readonly string _manifestPath;
 
-        public UnzippedPackage(IFileSystem fileSystem, string manifestPath)
+        internal UnzippedPackage(IFileSystem fileSystem, string manifestPath)
         {
             if (fileSystem == null)
             {
@@ -36,11 +36,9 @@ namespace NuGet
             string directory = Path.GetDirectoryName(manifestFullPath);
             _fileSystem = new PhysicalFileSystem(directory);
             _manifestPath = Path.GetFileName(manifestFullPath);
-
-            EnsureManifest();
         }
 
-        private void EnsureManifest()
+        public void EnsureManifest()
         {
             using (Stream stream = _fileSystem.OpenFile(_manifestPath))
             {

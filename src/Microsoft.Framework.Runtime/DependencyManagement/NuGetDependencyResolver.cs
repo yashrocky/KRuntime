@@ -340,13 +340,18 @@ namespace Microsoft.Framework.Runtime
 
         public IPackage FindCandidate(string name, SemanticVersion version)
         {
+            return FindCandidateCore(name, version);
+        }
+
+        private UnzippedPackage FindCandidateCore(string name, SemanticVersion version)
+        {
+            var packages = _repository.FindPackagesById(name);
             if (version == null)
             {
-                return _repository.FindPackagesById(name).FirstOrDefault();
+                return packages.FirstOrDefault();
             }
 
-            var packages = _repository.FindPackagesById(name);
-            IPackage bestMatch = null;
+            UnzippedPackage bestMatch = null;
 
             foreach (var package in packages)
             {

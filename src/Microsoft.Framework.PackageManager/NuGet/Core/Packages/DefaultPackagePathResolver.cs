@@ -6,12 +6,12 @@ using System.IO;
 
 namespace NuGet
 {
-    internal class DefaultPackagePathResolver : IPackagePathResolver
+    public class DefaultPackagePathResolver : IPackagePathResolver
     {
         private readonly IFileSystem _fileSystem;
         private readonly bool _useSideBySidePaths;
 
-        internal DefaultPackagePathResolver(string path)
+        public DefaultPackagePathResolver(string path)
             : this(new PhysicalFileSystem(path))
         {
         }

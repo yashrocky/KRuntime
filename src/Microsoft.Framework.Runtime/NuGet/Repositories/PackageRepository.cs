@@ -10,9 +10,9 @@ using NuGet.Resources;
 
 namespace NuGet
 {
-    public class PackageRepository
+    internal class PackageRepository
     {
-        private readonly ILookup<string, IPackage> _cache;
+        private readonly ILookup<string, UnzippedPackage> _cache;
 
         public PackageRepository(string physicalPath)
             : this(new DefaultPackagePathResolver(physicalPath),
@@ -20,7 +20,7 @@ namespace NuGet
         {
         }
 
-        public PackageRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem)
+        internal PackageRepository(IPackagePathResolver pathResolver, IFileSystem fileSystem)
         {
             if (pathResolver == null)
             {
@@ -37,11 +37,11 @@ namespace NuGet
             _cache = PopulateCache();
         }
 
-        private ILookup<string, IPackage> PopulateCache()
+        private ILookup<string, UnzippedPackage> PopulateCache()
         {
             string nuspecFilter = "*" + NuGetConstants.ManifestExtension;
 
-            var packages = new List<IPackage>();
+            var packages = new List<UnzippedPackage>();
 
             foreach (var dir in FileSystem.GetDirectories(String.Empty))
             {
@@ -66,7 +66,7 @@ namespace NuGet
             private set;
         }
 
-        public IEnumerable<IPackage> FindPackagesById(string packageId)
+        public IEnumerable<UnzippedPackage> FindPackagesById(string packageId)
         {
             if (String.IsNullOrEmpty(packageId))
             {
@@ -77,7 +77,7 @@ namespace NuGet
         }
 
 
-        private IPackage OpenNuspec(string path)
+        private UnzippedPackage OpenNuspec(string path)
         {
             if (!FileSystem.FileExists(path))
             {
