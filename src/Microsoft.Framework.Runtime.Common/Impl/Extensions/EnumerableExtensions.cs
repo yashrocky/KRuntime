@@ -1,15 +1,18 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace NuGet
 {
-    internal static class FileSystemExtensions
+    internal static class EnumerableExtensions
     {
-        internal static IEnumerable<string> GetFiles(this IFileSystem fileSystem, string path, string filter)
+        public static bool IsEmpty<T>(this IEnumerable<T> sequence)
         {
-            return fileSystem.GetFiles(path, filter, recursive: false);
+            return sequence == null || !sequence.Any();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace NuGet
                 throw new ArgumentNullException("directoryPathInPackage");
             }
 
-            TargetPath = System.IO.Path.Combine(directoryPathInPackage, Constants.PackageEmptyFileName);
+            TargetPath = System.IO.Path.Combine(directoryPathInPackage, NuGetConstants.PackageEmptyFileName);
         }
     }
 }

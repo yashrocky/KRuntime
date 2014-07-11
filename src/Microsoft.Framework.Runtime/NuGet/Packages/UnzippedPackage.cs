@@ -56,7 +56,7 @@ namespace NuGet
 
         public override Stream GetStream()
         {
-            var nupkgName = Id + "." + Version + Constants.PackageExtension;
+            var nupkgName = Id + "." + Version + NuGetConstants.PackageExtension;
             if (_fileSystem.FileExists(nupkgName))
             {
                 return _fileSystem.OpenFile(nupkgName);

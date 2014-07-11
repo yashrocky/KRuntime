@@ -39,7 +39,7 @@ namespace NuGet
 
         private ILookup<string, IPackage> PopulateCache()
         {
-            string nuspecFilter = "*" + Constants.ManifestExtension;
+            string nuspecFilter = "*" + NuGetConstants.ManifestExtension;
 
             var packages = new List<IPackage>();
 
@@ -84,7 +84,7 @@ namespace NuGet
                 return null;
             }
 
-            if (Path.GetExtension(path) == Constants.ManifestExtension)
+            if (Path.GetExtension(path) == NuGetConstants.ManifestExtension)
             {
                 UnzippedPackage package;
 

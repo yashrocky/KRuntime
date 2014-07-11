@@ -6,22 +6,8 @@ using System.IO;
 
 namespace NuGet
 {
-    public static class PathUtility
+    internal static class PathUtility
     {
-        public static bool IsSubdirectory(string basePath, string path)
-        {
-            if (basePath == null)
-            {
-                throw new ArgumentNullException("basePath");
-            }
-            if (path == null)
-            {
-                throw new ArgumentNullException("path");
-            }
-            basePath = basePath.TrimEnd(Path.DirectorySeparatorChar);
-            return path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
-        }
-
         public static string EnsureTrailingSlash(string path)
         {
             return EnsureTrailingCharacter(path, Path.DirectorySeparatorChar);

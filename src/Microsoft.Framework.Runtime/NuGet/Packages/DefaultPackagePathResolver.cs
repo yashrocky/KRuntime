@@ -68,7 +68,7 @@ namespace NuGet
             {
                 fileNameBase += "." + version;
             }
-            return fileNameBase + Constants.PackageExtension;
+            return fileNameBase + NuGetConstants.PackageExtension;
         }
     }
 }

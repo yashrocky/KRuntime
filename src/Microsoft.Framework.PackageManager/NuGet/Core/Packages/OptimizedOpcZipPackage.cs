@@ -196,7 +196,7 @@ namespace NuGet
             using (Stream stream = _fileSystem.OpenFile(_packagePath))
             {
                 Package package = Package.Open(stream);
-                PackageRelationship relationshipType = package.GetRelationshipsByType(Constants.PackageRelationshipNamespace + PackageBuilder.ManifestRelationType).SingleOrDefault();
+                PackageRelationship relationshipType = package.GetRelationshipsByType(NuGetConstants.PackageRelationshipNamespace + NuGetConstants.ManifestRelationType).SingleOrDefault();
 
                 if (relationshipType == null)
                 {

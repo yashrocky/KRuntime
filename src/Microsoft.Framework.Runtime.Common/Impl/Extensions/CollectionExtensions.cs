@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NuGet
 {
-    public static class CollectionExtensions
+    internal static class CollectionExtensions
     {
         public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
         {

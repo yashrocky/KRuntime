@@ -542,10 +542,10 @@ namespace NuGet
         {
             var knownFolders = new string[] 
             { 
-                Constants.ContentDirectory,
-                Constants.LibDirectory,
-                Constants.ToolsDirectory,
-                Constants.BuildDirectory
+                NuGetConstants.ContentDirectory,
+                NuGetConstants.LibDirectory,
+                NuGetConstants.ToolsDirectory,
+                NuGetConstants.BuildDirectory
             };
 
             for (int i = 0; i < knownFolders.Length; i++)
@@ -560,7 +560,7 @@ namespace NuGet
                     {
                         return VersionUtility.ParseFrameworkFolderName(
                             frameworkPart,
-                            strictParsing: knownFolders[i] == Constants.LibDirectory,
+                            strictParsing: knownFolders[i] == NuGetConstants.LibDirectory,
                             effectivePath: out effectivePath);
                     }
                     catch (ArgumentException)

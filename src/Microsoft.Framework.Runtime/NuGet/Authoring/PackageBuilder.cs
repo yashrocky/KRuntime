@@ -18,7 +18,6 @@ namespace NuGet
     public class PackageBuilder : IPackageBuilder
     {
         private const string DefaultContentType = "application/octet";
-        internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
 
         public PackageBuilder(string path, IPropertyProvider propertyProvider, bool includeEmptyDirectories)
@@ -330,8 +329,8 @@ namespace NuGet
             bool hasContentOrTool = files.Any(
                 f => f.TargetFramework != null &&
                      f.TargetFramework != VersionUtility.UnsupportedFrameworkName &&
-                     (f.Path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-                      f.Path.StartsWith(Constants.ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
+                     (f.Path.StartsWith(NuGetConstants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                      f.Path.StartsWith(NuGetConstants.ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
 
             if (hasContentOrTool)
             {
@@ -341,8 +340,8 @@ namespace NuGet
             // now check if the Lib folder has any empty framework folder
             bool hasEmptyLibFolder = files.Any(
                 f => f.TargetFramework != null &&
-                     f.Path.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                     f.EffectivePath == Constants.PackageEmptyFileName);
+                     f.Path.StartsWith(NuGetConstants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                     f.EffectivePath == NuGetConstants.PackageEmptyFileName);
 
             return hasEmptyLibFolder;
         }
@@ -351,7 +350,7 @@ namespace NuGet
         {
             return contentFiles.Any(file =>
                 file.Path != null &&
-                file.Path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                file.Path.StartsWith(NuGetConstants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
                 (file.Path.EndsWith(".install.xdt", StringComparison.OrdinalIgnoreCase) ||
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
@@ -464,10 +463,10 @@ namespace NuGet
 #if NET45
         private void WriteManifest(System.IO.Packaging.Package package, int minimumManifestVersion)
         {
-            Uri uri = UriUtility.CreatePartUri(Id + Constants.ManifestExtension);
+            Uri uri = UriUtility.CreatePartUri(Id + NuGetConstants.ManifestExtension);
 
             // Create the manifest relationship
-            package.CreateRelationship(uri, System.IO.Packaging.TargetMode.Internal, Constants.PackageRelationshipNamespace + ManifestRelationType);
+            package.CreateRelationship(uri, System.IO.Packaging.TargetMode.Internal, NuGetConstants.PackageRelationshipNamespace + NuGetConstants.ManifestRelationType);
 
             // Create the part
             var packagePart = package.CreatePart(uri, DefaultContentType, System.IO.Packaging.CompressionOption.Maximum);
@@ -501,7 +500,7 @@ namespace NuGet
 
         private void WriteManifest(ZipArchive package, int minimumManifestVersion)
         {
-            string path = Id + Constants.ManifestExtension;
+            string path = Id + NuGetConstants.ManifestExtension;
 
             WriteOpcManifestRelationship(package, path);
 
@@ -545,7 +544,7 @@ namespace NuGet
             {
                 // we only allow empty directories which are legit framework folders.
                 searchFiles.RemoveAll(file => file.TargetFramework == null &&
-                                              Path.GetFileName(file.TargetPath) == Constants.PackageEmptyFileName);
+                                              Path.GetFileName(file.TargetPath) == NuGetConstants.PackageEmptyFileName);
             }
 
             ExcludeFiles(searchFiles, basePath, exclude);

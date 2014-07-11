@@ -24,6 +24,11 @@
     <Compile Include="Impl\DependencyInjection\ServiceProvider.cs" />
     <Compile Include="Impl\EntryPointExecutor.cs" />
     <Compile Include="Impl\ExceptionHelper.cs" />
+    <Compile Include="Impl\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Impl\Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Impl\Extensions\ObjectExtensions.cs" />
+    <Compile Include="Impl\Extensions\StringExtensions.cs" />
+    <Compile Include="Impl\PathUtility.cs" />
     <Compile Include="Impl\PlatformHelper.cs" />
     <Compile Include="Impl\Trace.cs" />
   </ItemGroup>

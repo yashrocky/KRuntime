@@ -107,7 +107,7 @@ namespace NuGet
             // Files created by the path resolver. This would take into account the non-side-by-side scenario 
             // and we do not need to match this for id and version.
             var packageFileName = PathResolver.GetPackageFileName(packageId, version);
-            var manifestFileName = Path.ChangeExtension(packageFileName, Constants.ManifestExtension);
+            var manifestFileName = Path.ChangeExtension(packageFileName, NuGetConstants.ManifestExtension);
             var filesMatchingFullName = Enumerable.Concat(
                 GetPackageFiles(packageFileName), 
                 GetPackageFiles(manifestFileName));
@@ -124,8 +124,8 @@ namespace NuGet
                 string partialName = version.Version.Build < 1 ?
                                         String.Join(".", packageId, version.Version.Major, version.Version.Minor) :
                                         String.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
-                string partialManifestName = partialName + "*" + Constants.ManifestExtension;
-                partialName += "*" + Constants.PackageExtension;
+                string partialManifestName = partialName + "*" + NuGetConstants.ManifestExtension;
+                partialName += "*" + NuGetConstants.PackageExtension;
 
                 // Partial names would result is gathering package with matching major and minor but different build and revision. 
                 // Attempt to match the version in the path to the version we're interested in.
@@ -170,14 +170,14 @@ namespace NuGet
                 GetPackages(
                     openPackage, 
                     packageId, 
-                    GetPackageFiles(packageId + "*" + Constants.PackageExtension)));
+                    GetPackageFiles(packageId + "*" + NuGetConstants.PackageExtension)));
 
             // then, get packages through nuspec files
             packages.AddRange(
                 GetPackages(
                     openPackage, 
                     packageId, 
-                    GetPackageFiles(packageId + "*" + Constants.ManifestExtension)));
+                    GetPackageFiles(packageId + "*" + NuGetConstants.ManifestExtension)));
             return packages;
         }
 
@@ -196,7 +196,7 @@ namespace NuGet
                 {
                     // ignore error for unzipped packages (nuspec files).
                     if (string.Equals(
-                        Constants.ManifestExtension, 
+                        NuGetConstants.ManifestExtension, 
                         Path.GetExtension(path), 
                         StringComparison.OrdinalIgnoreCase))
                     {                        
@@ -256,10 +256,10 @@ namespace NuGet
 
         internal IEnumerable<string> GetPackageFiles(string filter = null)
         {
-            filter = filter ?? "*" + Constants.PackageExtension;
+            filter = filter ?? "*" + NuGetConstants.PackageExtension;
             Debug.Assert(
-                filter.EndsWith(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase) ||
-                filter.EndsWith(Constants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
+                filter.EndsWith(NuGetConstants.PackageExtension, StringComparison.OrdinalIgnoreCase) ||
+                filter.EndsWith(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
 
             // Check for package files one level deep. We use this at package install time
             // to determine the set of installed packages. Installed packages are copied to 
@@ -294,7 +294,7 @@ namespace NuGet
                 return null;
             }
 
-            if (Path.GetExtension(path) == Constants.PackageExtension)
+            if (Path.GetExtension(path) == NuGetConstants.PackageExtension)
             {
                 LocalPackage package;
                 try
@@ -321,7 +321,7 @@ namespace NuGet
 
                 return package;
             }
-            else if (Path.GetExtension(path) == Constants.ManifestExtension)
+            else if (Path.GetExtension(path) == NuGetConstants.ManifestExtension)
             {
                 if (FileSystem.FileExists(path))
                 {
@@ -359,7 +359,7 @@ namespace NuGet
         private string GetManifestFilePath(string packageId, SemanticVersion version)
         {
             string packageDirectory = PathResolver.GetPackageDirectory(packageId, version);
-            string manifestFileName = packageDirectory + Constants.ManifestExtension;
+            string manifestFileName = packageDirectory + NuGetConstants.ManifestExtension;
 
             return Path.Combine(packageDirectory, manifestFileName);
         }

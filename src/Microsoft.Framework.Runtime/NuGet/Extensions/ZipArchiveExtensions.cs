@@ -12,7 +12,7 @@ namespace NuGet
         {
             foreach (var entry in archive.Entries)
             {
-                if (Path.GetExtension(entry.Name) == Constants.ManifestExtension)
+                if (Path.GetExtension(entry.Name) == NuGetConstants.ManifestExtension)
                 {
                     return entry;
                 }

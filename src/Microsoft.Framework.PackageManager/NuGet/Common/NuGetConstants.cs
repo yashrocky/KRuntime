@@ -3,7 +3,7 @@
 
 namespace NuGet
 {
-    public static class NuGetConstants
+    internal static class NuGetConstants
     {
         public static readonly string DefaultFeedUrl = "https://www.nuget.org/api/v2/";
         public static readonly string V2LegacyOfficialPackageSourceUrl = "https://nuget.org/api/v2/";
@@ -14,8 +14,29 @@ namespace NuGet
         public static readonly string DefaultGalleryServerUrl = "https://www.nuget.org";
 
         public static readonly string DefaultSymbolServerUrl = "http://nuget.gw.symbolsource.org/Public/NuGet";
+
         public static readonly string ReadmeFileName = "readme.txt";
 
         public static readonly string NuGetSolutionSettingsFolder = ".nuget";
+
+        public const string PackageRelationshipNamespace = "http://schemas.microsoft.com/packaging/2010/07/";
+
+        public static readonly string ManifestRelationType = "manifest";
+
+        public static readonly string PackageExtension = ".nupkg";
+
+        public static readonly string ManifestExtension = ".nuspec";
+
+        public static readonly string ContentDirectory = "content";
+
+        public static readonly string LibDirectory = "lib";
+
+        public static readonly string ToolsDirectory = "tools";
+
+        public static readonly string BuildDirectory = "build";
+
+        public static readonly string BinDirectory = "bin";
+
+        public static readonly string SettingsFileName = "NuGet.Config";
     }
 }

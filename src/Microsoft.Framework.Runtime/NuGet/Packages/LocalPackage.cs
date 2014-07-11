@@ -13,6 +13,7 @@ namespace NuGet
     {
         private const string ResourceAssemblyExtension = ".resources.dll";
         private IList<IPackageAssemblyReference> _assemblyReferences;
+        private static readonly string[] AssemblyReferencesExtensions = new string[] { ".dll" };
 
         protected LocalPackage()
         {
@@ -250,7 +251,7 @@ namespace NuGet
         internal protected static bool IsAssemblyReference(string filePath)
         {           
             // assembly reference must be under lib/
-            if (!filePath.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (!filePath.StartsWith(NuGetConstants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -258,14 +259,14 @@ namespace NuGet
             var fileName = Path.GetFileName(filePath);
 
             // if it's an empty folder, yes
-            if (fileName == Constants.PackageEmptyFileName)
+            if (fileName == NuGetConstants.PackageEmptyFileName)
             {
                 return true;
             }
 
-            // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
+            // Assembly reference must have a .dll extension and is not a resource assembly;
             return !filePath.EndsWith(ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase) &&
-                Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+                AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
         }
 
         public override string ToString()

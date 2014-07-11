@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet
 {
-    public static class PackageExtensions
+    internal static class PackageExtensions
     {
         public static bool IsReleaseVersion(this IPackageName packageMetadata)
         {

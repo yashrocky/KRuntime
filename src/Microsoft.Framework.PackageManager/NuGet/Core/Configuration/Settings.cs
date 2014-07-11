@@ -25,7 +25,7 @@ namespace NuGet
         private readonly bool _isMachineWideSettings;
 
         public Settings(IFileSystem fileSystem)
-            : this(fileSystem, Constants.SettingsFileName, false)
+            : this(fileSystem, NuGetConstants.SettingsFileName, false)
         {
         }
 
@@ -181,7 +181,7 @@ namespace NuGet
                 {
                     var defaultSettingsPath = Path.Combine(appDataPath, "NuGet");
                     appDataSettings = ReadSettings(new PhysicalFileSystem(defaultSettingsPath),
-                        Constants.SettingsFileName);
+                        NuGetConstants.SettingsFileName);
                 }
             }
             else
@@ -711,7 +711,7 @@ namespace NuGet
             // otherwise we'd end up creating them.
             foreach (var dir in GetSettingsFilePaths(fileSystem))
             {
-                string fileName = Path.Combine(dir, Constants.SettingsFileName);
+                string fileName = Path.Combine(dir, NuGetConstants.SettingsFileName);
 
                 // This is to workaround limitations in the filesystem mock implementations that assume relative paths.
                 // For example MockFileSystem.Paths is holding relative paths, which whould be responsible for hundreds
