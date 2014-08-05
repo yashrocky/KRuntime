@@ -9,20 +9,18 @@ namespace Microsoft.Framework.Runtime.Loader
     public class NuGetAssemblyLoader : IAssemblyLoader
     {
         private readonly NuGetDependencyResolver _dependencyResolver;
-        private readonly IAssemblyLoaderEngine _loaderEngine;
 
-        public NuGetAssemblyLoader(IAssemblyLoaderEngine loaderEngine, NuGetDependencyResolver dependencyResolver)
+        public NuGetAssemblyLoader(NuGetDependencyResolver dependencyResolver)
         {
             _dependencyResolver = dependencyResolver;
-            _loaderEngine = loaderEngine;
         }
 
-        public Assembly Load(string name)
+        public Assembly Load(IAssemblyLoadContext loadContext, string name)
         {
             string path;
             if (_dependencyResolver.PackageAssemblyPaths.TryGetValue(name, out path))
             {
-                return _loaderEngine.LoadFile(path);
+                return loadContext.LoadFile(path);
             }
 
             return null;

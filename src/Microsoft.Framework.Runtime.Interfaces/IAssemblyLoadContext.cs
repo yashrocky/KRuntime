@@ -7,7 +7,7 @@ using System.Reflection;
 namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
-    public interface IAssemblyLoaderEngine
+    public interface IAssemblyLoadContext
     {
         Assembly LoadFile(string path);
         Assembly LoadStream(Stream assemblyStream, Stream pdbStream);

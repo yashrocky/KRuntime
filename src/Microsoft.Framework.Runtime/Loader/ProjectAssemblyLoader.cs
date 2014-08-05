@@ -11,18 +11,15 @@ namespace Microsoft.Framework.Runtime.Loader
     {
         private readonly IProjectResolver _projectResolver;
         private readonly ILibraryManager _libraryManager;
-        private readonly IAssemblyLoaderEngine _loaderEngine;
 
         public ProjectAssemblyLoader(IProjectResolver projectResovler,
-                                     IAssemblyLoaderEngine loaderEngine,
                                      ILibraryManager libraryManager)
         {
             _projectResolver = projectResovler;
-            _loaderEngine = loaderEngine;
             _libraryManager = libraryManager;
         }
 
-        public Assembly Load(string name)
+        public Assembly Load(IAssemblyLoadContext loadContext, string name)
         {
             Project project;
             if (!_projectResolver.TryResolveProject(name, out project))
@@ -41,7 +38,7 @@ namespace Microsoft.Framework.Runtime.Loader
             {
                 if (string.Equals(projectReference.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return projectReference.Load(_loaderEngine);
+                    return projectReference.Load(loadContext);
                 }
             }
 

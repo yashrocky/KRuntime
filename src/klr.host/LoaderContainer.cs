@@ -28,14 +28,19 @@ namespace klr.host
             });
         }
 
-        public Assembly Load(string name)
+        public Assembly Load(object loadContext, string name)
+        {
+            return ((IAssemblyLoader)this).Load((IAssemblyLoadContext)loadContext, name);
+        }
+
+        Assembly IAssemblyLoader.Load(IAssemblyLoadContext loadContext, string name)
         {
             Trace.TraceInformation("[{0}]: Load name={1}", GetType().Name, name);
             var sw = Stopwatch.StartNew();
 
             foreach (var loader in _loaders.Reverse())
             {
-                var assembly = loader.Load(name);
+                var assembly = loader.Load(loadContext, name);
                 if (assembly != null)
                 {
                     Trace.TraceInformation("[{0}]: Loaded name={1} in {2}ms", loader.GetType().Name, name, sw.ElapsedMilliseconds);

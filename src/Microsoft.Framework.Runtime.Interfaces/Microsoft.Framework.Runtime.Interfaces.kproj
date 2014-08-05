@@ -24,7 +24,7 @@
     <Compile Include="IDiagnosticResult.cs" />
     <Compile Include="IApplicationEnvironment.cs" />
     <Compile Include="IApplicationShutdown.cs" />
-    <Compile Include="IAssemblyLoaderEngine.cs" />
+    <Compile Include="IAssemblyLoadContext.cs" />
     <Compile Include="IFileMonitor.cs" />
     <Compile Include="IFileWatcher.cs" />
     <Compile Include="IAssemblyLoader.cs" />

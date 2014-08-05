@@ -9,12 +9,12 @@ using Microsoft.Framework.Runtime;
 
 namespace klr.host
 {
-    public class DefaultLoaderEngine : IAssemblyLoaderEngine
+    public class LoadContext : IAssemblyLoadContext
     {
         private readonly Func<string, Assembly> _loadFile;
         private readonly Func<Stream, Stream, Assembly> _loadStream;
 
-        public DefaultLoaderEngine(object loaderImpl)
+        public LoadContext(object loaderImpl)
         {
             if (loaderImpl == null)
             {

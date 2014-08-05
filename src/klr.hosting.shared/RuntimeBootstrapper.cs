@@ -206,9 +206,9 @@ namespace klr.hosting
                 var assembly = Assembly.Load(new AssemblyName("klr.host"));
 
                 // Loader impl
-                // var loaderEngine = new DefaultLoaderEngine(loaderImpl);
-                var loaderEngineType = assembly.GetType("klr.host.DefaultLoaderEngine");
-                var loaderEngine = Activator.CreateInstance(loaderEngineType, loaderImpl);
+                // var loadContext = new LoadContext(loaderImpl);
+                var loadContextType = assembly.GetType("klr.host.LoadContext");
+                var loadContext = Activator.CreateInstance(loadContextType, loaderImpl);
 
                 // The following code is doing:
                 // var loaderContainer = new klr.host.LoaderContainer();
@@ -221,17 +221,18 @@ namespace klr.hosting
                 var pathBasedLoaderType = assembly.GetType("klr.host.PathBasedAssemblyLoader");
 
                 var loaderContainer = Activator.CreateInstance(loaderContainerType);
-                var libLoader = Activator.CreateInstance(pathBasedLoaderType, new object[] { loaderEngine, searchPaths });
+                var libLoader = Activator.CreateInstance(pathBasedLoaderType, new object[] { searchPaths });
 
-                MethodInfo addLoaderMethodInfo = loaderContainerType.GetTypeInfo().GetDeclaredMethod("AddLoader");
+                var addLoaderMethodInfo = loaderContainerType.GetTypeInfo().GetDeclaredMethod("AddLoader");
                 var disposable = (IDisposable)addLoaderMethodInfo.Invoke(loaderContainer, new[] { libLoader });
-                var loaderContainerLoadMethodInfo = loaderContainerType.GetTypeInfo().GetDeclaredMethod("Load");
 
-                loader = (Func<string, Assembly>)loaderContainerLoadMethodInfo.CreateDelegate(typeof(Func<string, Assembly>), loaderContainer);
+                var loaderContainerLoadMethodInfo = loaderContainerType.GetTypeInfo().GetDeclaredMethod("Load");
+                var loadCore = (Func<object, string, Assembly>)loaderContainerLoadMethodInfo.CreateDelegate(typeof(Func<object, string, Assembly>), loaderContainer);
+                loader = name => loadCore(loadContext, name);
 
                 var bootstrapperType = assembly.GetType("klr.host.Bootstrapper");
                 var mainMethod = bootstrapperType.GetTypeInfo().GetDeclaredMethod("Main");
-                var bootstrapper = Activator.CreateInstance(bootstrapperType, loaderContainer, loaderEngine);
+                var bootstrapper = Activator.CreateInstance(bootstrapperType, loaderContainer, loadContext);
 
                 try
                 {

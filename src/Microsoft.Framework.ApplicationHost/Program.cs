@@ -20,9 +20,9 @@ namespace Microsoft.Framework.ApplicationHost
         private readonly IApplicationEnvironment _environment;
         private readonly IServiceProvider _serviceProvider;
 
-        public Program(IAssemblyLoaderContainer container, IApplicationEnvironment environment, IServiceProvider serviceProvider)
+        public Program(IServiceProvider serviceProvider, IApplicationEnvironment environment)
         {
-            _container = container;
+            _container = (IAssemblyLoaderContainer)serviceProvider.GetService(typeof(IAssemblyLoaderContainer));
             _environment = environment;
             _serviceProvider = serviceProvider;
         }

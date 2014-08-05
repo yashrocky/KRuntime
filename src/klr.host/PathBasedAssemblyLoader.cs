@@ -14,15 +14,13 @@ namespace klr.host
         private static readonly string[] _extensions = new string[] { ".dll", ".exe" };
 
         private readonly string[] _searchPaths;
-        private readonly IAssemblyLoaderEngine _loaderEngine;
 
-        public PathBasedAssemblyLoader(IAssemblyLoaderEngine loaderEngine, string[] searchPaths)
+        public PathBasedAssemblyLoader(string[] searchPaths)
         {
-            _loaderEngine = loaderEngine;
             _searchPaths = searchPaths;
         }
 
-        public Assembly Load(string name)
+        public Assembly Load(IAssemblyLoadContext loadContext, string name)
         {
             foreach (var path in _searchPaths)
             {
@@ -32,7 +30,7 @@ namespace klr.host
 
                     if (File.Exists(filePath))
                     {
-                        return _loaderEngine.LoadFile(filePath);
+                        return loadContext.LoadFile(filePath);
                     }
                 }
             }

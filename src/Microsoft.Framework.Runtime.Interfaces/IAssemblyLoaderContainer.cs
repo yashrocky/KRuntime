@@ -7,7 +7,7 @@ using System;
 namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
-    public interface IAssemblyLoaderContainer
+    public interface IAssemblyLoaderContainer : IAssemblyLoader
     {
         IDisposable AddLoader(IAssemblyLoader loader);
     }

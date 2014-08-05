@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Runtime
 
         IList<ISourceReference> GetSources();
 
-        Assembly Load(IAssemblyLoaderEngine loaderEngine);
+        Assembly Load(IAssemblyLoadContext loaderContext);
 
         void EmitReferenceAssembly(Stream stream);
 

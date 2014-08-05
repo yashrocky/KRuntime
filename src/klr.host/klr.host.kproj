@@ -22,7 +22,7 @@
   <ItemGroup>
     <Compile Include="ApplicationEnvironment.cs" />
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="DefaultLoaderEngine.cs" />
+    <Compile Include="LoadContext.cs" />
     <Compile Include="FrameworkNameUtility.cs" />
     <Compile Include="LoaderContainer.cs" />
     <Compile Include="PathBasedAssemblyLoader.cs" />

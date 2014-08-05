@@ -65,7 +65,7 @@ namespace Microsoft.Framework.Runtime.Roslyn
                                      .ToList();
         }
 
-        public Assembly Load(IAssemblyLoaderEngine loaderEngine)
+        public Assembly Load(IAssemblyLoadContext loadContext)
         {
             using (var pdbStream = new MemoryStream())
             using (var assemblyStream = new MemoryStream())
@@ -110,11 +110,11 @@ namespace Microsoft.Framework.Runtime.Roslyn
 
                 if (pdbStream.Length == 0)
                 {
-                    assembly = loaderEngine.LoadStream(assemblyStream, pdbStream: null);
+                    assembly = loadContext.LoadStream(assemblyStream, pdbStream: null);
                 }
                 else
                 {
-                    assembly = loaderEngine.LoadStream(assemblyStream, pdbStream);
+                    assembly = loadContext.LoadStream(assemblyStream, pdbStream);
                 }
 
                 return assembly;

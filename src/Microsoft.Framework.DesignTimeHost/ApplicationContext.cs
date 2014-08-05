@@ -23,7 +23,6 @@ namespace Microsoft.Framework.DesignTimeHost
 {
     public class ApplicationContext
     {
-        private readonly IAssemblyLoaderEngine _loaderEngine;
         private readonly IServiceProvider _hostServices;
 
         public class State
@@ -82,10 +81,9 @@ namespace Microsoft.Framework.DesignTimeHost
         private World _remote = new World();
         private World _local = new World();
 
-        public ApplicationContext(IServiceProvider services, IAssemblyLoaderEngine loaderEngine, int id)
+        public ApplicationContext(IServiceProvider services, int id)
         {
             _hostServices = services;
-            _loaderEngine = loaderEngine;
             Id = id;
         }
 
@@ -570,10 +568,7 @@ namespace Microsoft.Framework.DesignTimeHost
         {
             var environment = new ApplicationEnvironment(project, _targetFramework.Value, _configuration.Value);
 
-            var applicationHost = new ApplicationHost.Program(
-                (IAssemblyLoaderContainer)_hostServices.GetService(typeof(IAssemblyLoaderContainer)),
-                environment,
-                services);
+            var applicationHost = new ApplicationHost.Program(services, environment);
 
             try
             {

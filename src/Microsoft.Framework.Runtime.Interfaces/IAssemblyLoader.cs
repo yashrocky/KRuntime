@@ -9,6 +9,6 @@ namespace Microsoft.Framework.Runtime
     [AssemblyNeutral]
     public interface IAssemblyLoader
     {
-        Assembly Load(string name);
+        Assembly Load(IAssemblyLoadContext loaderContext, string name);
     }
 }
