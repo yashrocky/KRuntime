@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Framework.Runtime;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.IO;
+using Microsoft.Framework.Runtime;
 
 namespace HelloWorld.Compiler.Preprocess
 {
@@ -30,10 +26,18 @@ if ({0} == null) {{ throw new {1}(nameof({0})); }}
 ", parameter.Identifier, typeof(ArgumentNullException).FullName));
                     if (index == 0)
                     {
-                        var lineDefault = SyntaxFactory.ParseLeadingTrivia(@"#line default
-");
-                        var statement = statements[0].WithLeadingTrivia(lineDefault);
-                        statements = statements.Replace(statements[0], statement);
+                        // We need to inject a #line <line number> before the first statement in the original method body so that the
+                        // debugger matches up to the unmodified source file.
+                        var statement = statements[0];
+                        // Roslyn line numbers are 0-based, but VS uses 1-based line numbers.
+                        var lineNumber = statement.GetLocation().GetMappedLineSpan().StartLinePosition.Line + 1;
+                        var lineDefault = SyntaxFactory.ParseLeadingTrivia("#line " + lineNumber + Environment.NewLine);
+                        if (statement.HasLeadingTrivia)
+                        {
+                            lineDefault = lineDefault.AddRange(statement.GetLeadingTrivia());
+                        }
+
+                        statements = statements.Replace(statement, statement.WithLeadingTrivia(lineDefault));
                     }
 
                     statements = statements.Insert(index++, ifStatement);
@@ -62,21 +66,9 @@ if ({0} == null) {{ throw new {1}(nameof({0})); }}
             foreach (var item in syntraxTrees)
             {
                 var replaced = rewriter.Visit(item.GetRoot());
-                var blah = item.WithRootAndOptions(replaced, item.Options);
                 context.CSharpCompilation = context.CSharpCompilation.ReplaceSyntaxTree(item,
-                                                                                        blah);
-
-                if (!string.IsNullOrEmpty(item.FilePath))
-                {
-                    using (var writer = File.CreateText(@"D:\temp\ConsoleApp2\ConsoleApp2\" + System.IO.Path.GetFileName(item.FilePath)))
-                    {
-                        blah.GetText().Write(writer);
-                    }
-                }
-
+                                                                                        item.WithRootAndOptions(replaced, item.Options));
             }
-
-
         }
 
         public void AfterCompile(IAfterCompileContext context)
