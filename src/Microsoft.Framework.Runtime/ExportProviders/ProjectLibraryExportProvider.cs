@@ -41,10 +41,10 @@ namespace Microsoft.Framework.Runtime
             {
                 target = target.ChangeTargetFramework(targetFrameworkInformation.FrameworkName);
             }
-            
+
             var key = Tuple.Create(
-                target.Name, 
-                target.TargetFramework, 
+                target.Name,
+                target.TargetFramework,
                 target.Configuration,
                 target.Aspect);
 
@@ -68,35 +68,40 @@ namespace Microsoft.Framework.Runtime
                 }
                 else
                 {
-                    // Find the default project exporter
-                    var projectReferenceProvider = _projectReferenceProviders.GetOrAdd(project.LanguageServices.ProjectReferenceProvider, typeInfo =>
+                    var factory = _serviceProvider.GetService(typeof(IAssemblyLoadContextFactory)) as IAssemblyLoadContextFactory;
+
+                    using (var context = factory.Create())
                     {
-                        return LanguageServices.CreateService<IProjectReferenceProvider>(_serviceProvider, typeInfo);
-                    });
+                        // Find the default project exporter
+                        var projectReferenceProvider = _projectReferenceProviders.GetOrAdd(project.LanguageServices.ProjectReferenceProvider, typeInfo =>
+                        {
+                            return LanguageServices.CreateService<IProjectReferenceProvider>(_serviceProvider, context, typeInfo);
+                        });
 
-                    Trace.TraceInformation("[{0}]: GetProjectReference({1}, {2}, {3}, {4})", project.LanguageServices.ProjectReferenceProvider.TypeName, target.Name, target.TargetFramework, target.Configuration, target.Aspect);
+                        Trace.TraceInformation("[{0}]: GetProjectReference({1}, {2}, {3}, {4})", project.LanguageServices.ProjectReferenceProvider.TypeName, target.Name, target.TargetFramework, target.Configuration, target.Aspect);
 
-                    // Get the exports for the project dependencies
-                    var projectExport = new Lazy<ILibraryExport>(() => ProjectExportProviderHelper.GetExportsRecursive(
-                        cache,
-                        libraryManager,
-                        exportProvider,
-                        target,
-                        dependenciesOnly: true));
+                        // Get the exports for the project dependencies
+                        var projectExport = new Lazy<ILibraryExport>(() => ProjectExportProviderHelper.GetExportsRecursive(
+                            cache,
+                            libraryManager,
+                            exportProvider,
+                            target,
+                            dependenciesOnly: true));
 
-                    // Resolve the project export
-                    IMetadataProjectReference projectReference = projectReferenceProvider.GetProjectReference(
-                        project,
-                        target,
-                        () => projectExport.Value,
-                        metadataReferences);
+                        // Resolve the project export
+                        IMetadataProjectReference projectReference = projectReferenceProvider.GetProjectReference(
+                            project,
+                            target,
+                            () => projectExport.Value,
+                            metadataReferences);
 
-                    metadataReferences.Add(projectReference);
+                        metadataReferences.Add(projectReference);
 
-                    // Shared sources
-                    foreach (var sharedFile in project.SharedFiles)
-                    {
-                        sourceReferences.Add(new SourceFileReference(sharedFile));
+                        // Shared sources
+                        foreach (var sharedFile in project.SharedFiles)
+                        {
+                            sourceReferences.Add(new SourceFileReference(sharedFile));
+                        }
                     }
                 }
 
