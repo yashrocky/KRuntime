@@ -64,7 +64,11 @@ namespace Microsoft.Framework.Runtime
             _serviceProvider.Add(typeof(IApplicationEnvironment), new ApplicationEnvironment(Project, targetFramework, configuration));
             _serviceProvider.Add(typeof(ILibraryExportProvider), LibraryExportProvider, includeInManifest: false);
             _serviceProvider.Add(typeof(IProjectResolver), ProjectResolver);
-            _serviceProvider.Add(typeof(IFileWatcher), NoopWatcher.Instance);
+
+            if (_serviceProvider.GetService(typeof(IFileWatcher)) == null)
+            {
+                _serviceProvider.Add(typeof(IFileWatcher), NoopWatcher.Instance);
+            }
 
             _serviceProvider.Add(typeof(NuGetDependencyResolver), NuGetDependencyProvider, includeInManifest: false);
             _serviceProvider.Add(typeof(ProjectReferenceDependencyProvider), ProjectDepencyProvider, includeInManifest: false);

@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Runtime.Roslyn
             _loadContextFactory = loadContextFactory;
             _watcher = watcher;
             _services = services;
-            _sourceTextService = (ISourceTextService) services.GetService(typeof(ISourceTextService));
+            _sourceTextService = (ISourceTextService)services.GetService(typeof(ISourceTextService));
         }
 
         public CompilationContext CompileProject(
@@ -88,10 +88,21 @@ namespace Microsoft.Framework.Runtime.Roslyn
             if (isMainAspect)
             {
                 sourceFiles = project.SourceFiles;
+
+                _watcher.WatchFilePatterns(project.ProjectDirectory,
+                                           project.SourcePatterns,
+                                           project.PreprocessPatterns.Concat(project.SharedPatterns)
+                                                                     .Concat(project.ResourcesPatterns)
+                                                                     .Concat(project.ExcludePatterns));
             }
             else if (isPreprocessAspect)
             {
                 sourceFiles = project.PreprocessSourceFiles;
+
+                _watcher.WatchFilePatterns(project.ProjectDirectory,
+                                           project.PreprocessPatterns,
+                                           project.SharedPatterns.Concat(project.ResourcesPatterns)
+                                                                 .Concat(project.ExcludePatterns));
             }
 
             var parseOptions = new CSharpParseOptions(languageVersion: compilationSettings.LanguageVersion,
@@ -222,16 +233,8 @@ namespace Microsoft.Framework.Runtime.Roslyn
         {
             var trees = new List<SyntaxTree>();
 
-            // Enumerate all sub dirs and start from that set of folders incase new folders are added
-            var dirs = new HashSet<string>(Directory.EnumerateDirectories(project.ProjectDirectory, "*.*", SearchOption.AllDirectories));
-            dirs.Add(project.ProjectDirectory);
-
             foreach (var sourcePath in sourceFiles)
             {
-                dirs.Add(Path.GetDirectoryName(sourcePath));
-
-                _watcher.WatchFile(sourcePath);
-
                 var syntaxTree = CreateSyntaxTree(sourcePath, parseOptions);
 
                 trees.Add(syntaxTree);
@@ -241,24 +244,9 @@ namespace Microsoft.Framework.Runtime.Roslyn
             {
                 var sourcePath = sourceFileReference.Path;
 
-                dirs.Add(Path.GetDirectoryName(sourcePath));
-
-                _watcher.WatchFile(sourcePath);
-
                 var syntaxTree = CreateSyntaxTree(sourcePath, parseOptions);
 
                 trees.Add(syntaxTree);
-            }
-
-            // Watch all directories
-            var ctx = _cacheContextAccessor.Current;
-
-            foreach (var d in dirs)
-            {
-                ctx.Monitor(new FileWriteTimeCacheDependency(d));
-
-                // TODO: Make the file watcher hand out cache dependencies as well
-                _watcher.WatchDirectory(d, ".cs");
             }
 
             return trees;

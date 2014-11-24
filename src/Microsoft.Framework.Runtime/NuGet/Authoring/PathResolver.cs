@@ -48,7 +48,7 @@ namespace NuGet
             return Path.Combine(basePath, wildcard);
         }
 
-        private static Regex WildcardToRegex(string wildcard)
+        internal static Regex WildcardToRegex(string wildcard)
         {
             string pattern = null;
 

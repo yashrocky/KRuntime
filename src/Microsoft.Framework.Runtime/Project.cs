@@ -79,19 +79,19 @@ namespace Microsoft.Framework.Runtime
 
         public string[] Tags { get; private set; }
 
-        internal IEnumerable<string> SourcePatterns { get; set; }
+        public IEnumerable<string> SourcePatterns { get; private set; }
 
-        internal IEnumerable<string> ExcludePatterns { get; set; }
+        public IEnumerable<string> ExcludePatterns { get; private set; }
 
-        internal IEnumerable<string> PackExcludePatterns { get; set; }
+        public IEnumerable<string> PackExcludePatterns { get; private set; }
 
-        internal IEnumerable<string> PreprocessPatterns { get; set; }
+        public IEnumerable<string> PreprocessPatterns { get; private set; }
 
-        internal IEnumerable<string> SharedPatterns { get; set; }
+        public IEnumerable<string> SharedPatterns { get; private set; }
 
-        internal IEnumerable<string> ResourcesPatterns { get; set; }
+        public IEnumerable<string> ResourcesPatterns { get; private set; }
 
-        internal IEnumerable<string> ContentsPatterns { get; set; }
+        public IEnumerable<string> ContentsPatterns { get; private set; }
 
         public IEnumerable<string> SourceFiles
         {

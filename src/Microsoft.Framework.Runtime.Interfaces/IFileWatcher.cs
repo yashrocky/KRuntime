@@ -3,15 +3,16 @@
 
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
     public interface IFileWatcher : IFileMonitor, IDisposable
     {
-        void WatchDirectory(string path, string extension);
+        void WatchFile(string path);
 
-        bool WatchFile(string path);
+        void WatchFilePatterns(string basePath, IEnumerable<string> patterns, IEnumerable<string> excludePatterns);
 
         void WatchProject(string path);
     }

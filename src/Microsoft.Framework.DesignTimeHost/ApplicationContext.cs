@@ -28,6 +28,7 @@ namespace Microsoft.Framework.DesignTimeHost
         private readonly INamedCacheDependencyProvider _namedDependencyProvider;
         private readonly IApplicationEnvironment _appEnv;
         private readonly ISourceTextService _sourceTextService;
+        private readonly IFileWatcher _watcher;
         private readonly Queue<Message> _inbox = new Queue<Message>();
         private readonly object _processingLock = new object();
 
@@ -35,6 +36,7 @@ namespace Microsoft.Framework.DesignTimeHost
         private readonly Trigger<string> _configuration = new Trigger<string>();
         private readonly Trigger<Void> _filesChanged = new Trigger<Void>();
         private readonly Trigger<Void> _rebuild = new Trigger<Void>();
+        private readonly Trigger<Void> _restoreComplete = new Trigger<Void>();
         private readonly Trigger<Void> _sourceTextChanged = new Trigger<Void>();
         private readonly Trigger<Void> _requiresCompilation = new Trigger<Void>();
 
@@ -59,6 +61,8 @@ namespace Microsoft.Framework.DesignTimeHost
             _cacheContextAccessor = cacheContextAccessor;
             _namedDependencyProvider = namedDependencyProvider;
             _sourceTextService = (ISourceTextService)services.GetService(typeof(ISourceTextService));
+            _watcher = (IFileWatcher)services.GetService(typeof(IFileWatcher));
+            _watcher.OnChanged += OnFileChanged;
             Id = id;
         }
 
@@ -205,7 +209,7 @@ namespace Microsoft.Framework.DesignTimeHost
                     break;
                 case "RestoreComplete":
                     {
-                        _rebuild.Value = default(Void);
+                        _restoreComplete.Value = default(Void);
                     }
                     break;
                 case "Rebuild":
@@ -284,21 +288,27 @@ namespace Microsoft.Framework.DesignTimeHost
                 _configuration.WasAssigned ||
                 _filesChanged.WasAssigned ||
                 _rebuild.WasAssigned ||
-                _sourceTextChanged.WasAssigned)
+                _sourceTextChanged.WasAssigned ||
+                _restoreComplete.WasAssigned)
             {
                 bool triggerBuildOutputs = _rebuild.WasAssigned;
+                bool triggerRestoreComplete = _restoreComplete.WasAssigned;
 
                 _appPath.ClearAssigned();
                 _configuration.ClearAssigned();
                 _filesChanged.ClearAssigned();
                 _rebuild.ClearAssigned();
                 _sourceTextChanged.ClearAssigned();
+                _restoreComplete.ClearAssigned();
 
                 // Trigger that the project outputs changes in case the runtime process
                 // hasn't died yet
                 TriggerProjectOutputsChanged();
 
-                state = DoInitialWork(_appPath.Value, _configuration.Value, triggerBuildOutputs);
+                state = DoInitialWork(_appPath.Value,
+                                      _configuration.Value,
+                                      triggerBuildOutputs,
+                                      triggerRestoreComplete);
             }
 
             if (state == null)
@@ -399,7 +409,7 @@ namespace Microsoft.Framework.DesignTimeHost
 
                     // Only emit the assembly if there are no errors and
                     // this is the very first time or there were changes
-                    if (!compilation.Errors.Any() && 
+                    if (!compilation.Errors.Any() &&
                         (!compilation.HasOutputs || projectCompilationChanged))
                     {
                         var engine = new NonLoadingLoadContext();
@@ -703,7 +713,14 @@ namespace Microsoft.Framework.DesignTimeHost
             return !object.Equals(local, remote);
         }
 
-        private State DoInitialWork(string appPath, string configuration, bool triggerBuildOutputs)
+        private void OnFileChanged(string path)
+        {
+            Trace.TraceError("[ApplicationContext]: OnFileChanged({0})", path);
+
+            _rebuild.Value = default(Void);
+        }
+
+        private State DoInitialWork(string appPath, string configuration, bool triggerBuildOutputs, bool triggerRestoreComplete)
         {
             var state = new State
             {
@@ -721,6 +738,11 @@ namespace Microsoft.Framework.DesignTimeHost
             {
                 // Trigger the build outputs for this project
                 _namedDependencyProvider.Trigger(project.Name + "_BuildOutputs");
+            }
+
+            if (triggerRestoreComplete)
+            {
+                _namedDependencyProvider.Trigger(project.Name + "_Dependencies");
             }
 
             state.Name = project.Name;
@@ -837,7 +859,7 @@ namespace Microsoft.Framework.DesignTimeHost
                 }
 
                 // Add a cache dependency on restore complete to reevaluate dependencies
-                ctx.Monitor(_namedDependencyProvider.GetNamedDependency(project.Name + "_BuildOutputs"));
+                ctx.Monitor(_namedDependencyProvider.GetNamedDependency(project.Name + "_Dependencies"));
 
                 return applicationHostContext;
             });

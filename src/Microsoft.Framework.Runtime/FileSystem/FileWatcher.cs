@@ -4,18 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
+using NuGet;
 
 namespace Microsoft.Framework.Runtime.FileSystem
 {
     public class FileWatcher : IFileWatcher
     {
-        private readonly HashSet<string> _files = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, HashSet<string>> _directories = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
+        private readonly HashSet<IPattern> _patterns = new HashSet<IPattern>();
         private readonly List<IWatcherRoot> _watchers = new List<IWatcherRoot>();
 
-        internal FileWatcher()
+        public FileWatcher()
         {
 
         }
@@ -27,16 +27,16 @@ namespace Microsoft.Framework.Runtime.FileSystem
 
         public event Action<string> OnChanged;
 
-        public void WatchDirectory(string path, string extension)
+        public void WatchFile(string path)
         {
-            var extensions = _directories.GetOrAdd(path, _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-
-            extensions.Add(extension);
+            _patterns.Add(new Pattern(path));
         }
 
-        public bool WatchFile(string path)
+        public void WatchFilePatterns(string basePath, IEnumerable<string> includePatterns, IEnumerable<string> excludePatterns)
         {
-            return _files.Add(path);
+            var includes = includePatterns.Select(pattern => new Pattern(basePath, pattern));
+            var excludes = excludePatterns.Select(pattern => new Pattern(basePath, pattern));
+            _patterns.Add(new MultiPattern(includes, excludes));
         }
 
         public void WatchProject(string projectPath)
@@ -99,14 +99,7 @@ namespace Microsoft.Framework.Runtime.FileSystem
         {
             if (HasChanged(oldPath, newPath, changeType))
             {
-                if (oldPath != null)
-                {
-                    Trace.TraceInformation("{0} -> {1}", oldPath, newPath);
-                }
-                else
-                {
-                    Trace.TraceInformation("{0} -> {1}", changeType, newPath);
-                }
+                Trace.TraceInformation("[{0}]: HasChanged({1}, {2}, {3})", nameof(FileWatcher), oldPath, newPath, changeType);
 
                 if (OnChanged != null)
                 {
@@ -166,43 +159,190 @@ namespace Microsoft.Framework.Runtime.FileSystem
 
         private bool HasChanged(string oldPath, string newPath, WatcherChangeTypes changeType)
         {
-            // File changes
-            if (_files.Contains(newPath) ||
-                (oldPath != null && _files.Contains(oldPath)))
+            foreach (var p in _patterns)
             {
-                return true;
-            }
-
-            HashSet<string> extensions;
-            if (_directories.TryGetValue(newPath, out extensions) ||
-                _directories.TryGetValue(Path.GetDirectoryName(newPath), out extensions))
-            {
-                string extension = Path.GetExtension(newPath);
-
-                if (String.IsNullOrEmpty(extension))
+                switch (changeType)
                 {
-                    // Assume it's a directory
-                    if (changeType == WatcherChangeTypes.Created ||
-                        changeType == WatcherChangeTypes.Renamed)
-                    {
-                        foreach (var e in extensions)
+                    case WatcherChangeTypes.Created:
+                        // (null, c:\foo, created)
+                        // (null, c:\foo, changed)
+                        if (p.MatchesFile(newPath))
                         {
-                            WatchDirectory(newPath, e);
+                            return true;
                         }
-                    }
-                    else if (changeType == WatcherChangeTypes.Deleted)
-                    {
-                        return true;
-                    }
 
-                    // Ignore anything else
-                    return false;
+                        break;
+                    case WatcherChangeTypes.Deleted:
+                        // (null, c:\foo.cs, deleted)
+                        // (null, c:\foo, deleted)
+                        if (p.MatchesFile(newPath) || p.MatchesDirectory(newPath))
+                        {
+                            return true;
+                        }
+                        break;
+                    case WatcherChangeTypes.Changed:
+                        // (null, c:\foo.cs, changed)
+                        // (null, c:\foo.cs, created)
+                        if (p.MatchesFile(newPath))
+                        {
+                            return true;
+                        }
+                        break;
+                    case WatcherChangeTypes.Renamed:
+                        // (c:\foo, c:\bar, renamed)
+                        // (c:\foo.cs, c:\bar.cs, renamed)
+                        if (p.MatchesFile(oldPath) || p.MatchesFile(newPath))
+                        {
+                            return true;
+                        }
+
+                        if (p.MatchesDirectory(oldPath) || p.MatchesDirectory(newPath))
+                        {
+                            return true;
+                        }
+
+                        break;
+                    default:
+                        break;
                 }
-
-                return extensions.Contains(extension);
             }
 
             return false;
+        }
+
+        private interface IPattern
+        {
+            bool MatchesFile(string path);
+            bool MatchesDirectory(string path);
+        }
+
+        private class MultiPattern : IPattern
+        {
+            private readonly IEnumerable<Pattern> _excludes;
+            private readonly IEnumerable<Pattern> _includes;
+
+            public MultiPattern(IEnumerable<Pattern> includes, IEnumerable<Pattern> excludes)
+            {
+                _includes = includes;
+                _excludes = excludes;
+            }
+
+            public bool MatchesFile(string path)
+            {
+                return Matches(path, p => p.MatchesFile(path));
+            }
+
+            public bool MatchesDirectory(string path)
+            {
+                return Matches(path, p => p.MatchesDirectory(path));
+            }
+
+            private bool Matches(string path, Func<IPattern, bool> matcher)
+            {
+                bool included = _includes.Any(matcher);
+                bool excluded = _excludes.Any() ? _excludes.All(matcher) : false;
+
+                return included && !excluded;
+            }
+        }
+
+        private class Pattern : IPattern
+        {
+            private readonly Func<string, bool> _matcher;
+            private readonly string _testFile;
+
+            public Pattern(string path)
+            {
+                FullPattern = path;
+                _matcher = p => string.Equals(p, path);
+            }
+
+            public Pattern(string basePath, string pattern)
+            {
+                FullPattern = Path.Combine(basePath, pattern);
+                var regex = PathResolver.WildcardToRegex(FullPattern);
+                _matcher = p => regex.IsMatch(p);
+
+                // Extract a file pattern from the last segment of the glob pattern
+                // **/*.cs
+                // **/*.*
+                // foo/**/*
+                // ../x/y/*/*.cs
+                // ../../x/y/foo.cs
+                var lastSlash = pattern.LastIndexOfAny(new[] { '/', '\\' });
+                if (lastSlash != -1)
+                {
+                    var lastToken = pattern.Substring(lastSlash + 1);
+                    if (PathResolver.IsWildcardSearch(lastToken))
+                    {
+                        if (lastToken == "**" || lastToken == "*.*" || lastToken == "*")
+                        {
+                            // any file name
+                            _testFile = "test.txt";
+                        }
+                        else
+                        {
+                            // file name with extension
+                            _testFile = lastToken.Replace("*.", "test.");
+                        }
+                    }
+                }
+            }
+
+            public string FullPattern { get; private set; }
+
+            public bool MatchesFile(string path)
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                return _matcher(path);
+            }
+
+            public bool MatchesDirectory(string path)
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(_testFile))
+                {
+                    return false;
+                }
+
+                if (Path.HasExtension(path))
+                {
+                    return false;
+                }
+
+                var testPath = Path.Combine(path, _testFile);
+
+                if (_matcher(testPath))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as Pattern;
+                if (other != null)
+                {
+                    return string.Equals(FullPattern, other.FullPattern);
+                }
+
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return FullPattern.GetHashCode();
+            }
         }
     }
 
@@ -215,19 +355,25 @@ namespace Microsoft.Framework.Runtime.FileSystem
 
         }
 
-        public bool WatchFile(string path)
+        public void WatchFile(string path)
         {
-            return true;
+
         }
 
-// Suppressing warning CS0067: The event 'Microsoft.Framework.Runtime.FileSystem.NoopWatcher.OnChanged' is never used
+        public void WatchDirectory(string path)
+        {
+
+        }
+
+        public void WatchFilePatterns(string basePath, IEnumerable<string> includePatterns, IEnumerable<string> excludePatterns)
+        {
+
+        }
+
+        // Suppressing warning CS0067: The event 'Microsoft.Framework.Runtime.FileSystem.NoopWatcher.OnChanged' is never used
 #pragma warning disable 0067
         public event Action<string> OnChanged;
 #pragma warning restore 0067
-
-        public void WatchDirectory(string path, string extension)
-        {
-        }
 
         public void Dispose()
         {
