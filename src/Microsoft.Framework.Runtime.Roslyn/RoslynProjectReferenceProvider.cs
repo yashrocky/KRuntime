@@ -12,7 +12,6 @@ namespace Microsoft.Framework.Runtime.Roslyn
             ICache cache, 
             ICacheContextAccessor cacheContextAccessor,
             INamedCacheDependencyProvider namedCacheProvider,
-            IAssemblyLoadContextFactory loadContextFactory,
             IFileWatcher watcher,
             IServiceProvider services)
         {
@@ -20,7 +19,6 @@ namespace Microsoft.Framework.Runtime.Roslyn
                 cache, 
                 cacheContextAccessor, 
                 namedCacheProvider,
-                loadContextFactory,
                 watcher, 
                 services);
         }
