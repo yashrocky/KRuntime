@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Microsoft.Framework.Runtime.Loader
 {
@@ -24,9 +25,7 @@ namespace Microsoft.Framework.Runtime.Loader
 
         public Assembly Load(string name)
         {
-            IAssemblyLoadContext loadContext = _loadContextAccessor.GetLoadContext(typeof(ProjectAssemblyLoader).GetTypeInfo().Assembly);
-
-            return Load(name, loadContext);
+            return Load(name, _loadContextAccessor.Default);
         }
 
         public Assembly Load(string name, IAssemblyLoadContext loadContext)

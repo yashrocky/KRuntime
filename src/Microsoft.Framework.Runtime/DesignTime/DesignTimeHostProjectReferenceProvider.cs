@@ -17,7 +17,8 @@ namespace Microsoft.Framework.Runtime
             Project project,
             ILibraryKey target,
             Func<ILibraryExport> referenceResolver,
-            IList<IMetadataReference> outgoingReferences)
+            IList<IMetadataReference> outgoingReferences,
+            Func<IAssemblyLoadContext> loadContextResolver = null)
         {
             // The target framework and configuration are assumed to be correct
             // in the design time process

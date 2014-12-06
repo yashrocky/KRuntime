@@ -70,20 +70,22 @@ namespace klr.hosting
 
             return null;
         }
-        
+
         public bool EnableMultiCoreJit()
         {
+            return false;
+            /*
             var appBaseDirectory = AppContext.BaseDirectory;
             var appBinDirectoryName = "bin";
             var appBinDirectory = Path.Combine(appBaseDirectory, appBinDirectoryName);
             var appProfileDirectoryName = "profile";
             var appProfileDirectory = Path.Combine(appBinDirectory, appProfileDirectoryName);
-            
+
             if (!Directory.Exists(appProfileDirectory))
             {
                 Directory.CreateDirectory(appProfileDirectory);
-                
-                try 
+
+                try
                 {
                     Directory.CreateDirectory(appProfileDirectory);
                 }
@@ -92,12 +94,13 @@ namespace klr.hosting
                     return false;
                 }
             }
-            
+
             SetProfileOptimizationRoot(appProfileDirectory);
 
             return true;
+            */
         }
-        
+
         public void StartMultiCoreJitProfile(string profileFilename)
         {
             StartProfileOptimization(profileFilename);

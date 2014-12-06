@@ -11,8 +11,9 @@ namespace Microsoft.Framework.Runtime
     {
         IMetadataProjectReference GetProjectReference(
             Project project,
-            ILibraryKey target, 
+            ILibraryKey target,
             Func<ILibraryExport> referenceResolver,
-            IList<IMetadataReference> outgoingReferences);
+            IList<IMetadataReference> outgoingReferences,
+            Func<IAssemblyLoadContext> assemblyLoadContextResolver = null);
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.Framework.Runtime;
+using System.Diagnostics;
 #if ASPNETCORE50
 using System.Runtime.Loader;
 #endif
@@ -30,7 +32,6 @@ namespace Microsoft.Framework.Runtime.Loader
             {
                 return assembly;
             }
-
             // TODO: Make this more efficient
             lock (_assemblyCache)
             {
@@ -112,7 +113,7 @@ namespace Microsoft.Framework.Runtime.Loader
 
         private void ExtractAssemblyNeutralInterfaces(Assembly assembly)
         {
-            // Embedded assemblies end with .dll
+            // Embedded assemblies and with .dll
             foreach (var name in assembly.GetManifestResourceNames())
             {
                 if (name.EndsWith(".dll"))
@@ -136,7 +137,7 @@ namespace Microsoft.Framework.Runtime.Loader
     public abstract class LoadContext : IAssemblyLoadContext
     {
         internal static LoadContext Default = new DefaultLoadContext();
-
+    
         protected string _contextId;
 
         public LoadContext(IAssemblyNeutralInterfaceCache assemblyNeutralInterfaceCache)

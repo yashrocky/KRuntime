@@ -150,6 +150,10 @@ namespace Microsoft.Framework.Runtime
             _applicationHostContext.AddService(typeof(IFileMonitor), _watcher);
             _applicationHostContext.AddService(typeof(IFileWatcher), _watcher);
 
+            /*
+
+            Disable temporarily
+
             if (options.CompilationServerPort.HasValue)
             {
                 // Using this ctor because it works on mono, this is hard coded to ipv4
@@ -166,6 +170,7 @@ namespace Microsoft.Framework.Runtime
                 Project.DefaultLanguageServicesAssembly = typeof(DefaultHost).GetTypeInfo().Assembly.GetName().Name;
                 Project.DefaultProjectReferenceProviderType = typeof(DesignTimeHostProjectReferenceProvider).FullName;
             }
+            */
 
             CallContextServiceLocator.Locator.ServiceProvider = ServiceProvider;
         }

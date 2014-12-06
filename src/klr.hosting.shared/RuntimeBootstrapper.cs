@@ -20,10 +20,10 @@ namespace klr.hosting
     internal static class RuntimeBootstrapper
     {
         private static readonly ConcurrentDictionary<string, object> _assemblyLoadLocks =
-                new ConcurrentDictionary<string, object>(StringComparer.Ordinal);
+            new ConcurrentDictionary<string, object>(StringComparer.Ordinal);
 
-        private static readonly ConcurrentDictionary<string, Assembly> _assemblyCache
-                = new ConcurrentDictionary<string, Assembly>(StringComparer.Ordinal);
+        private static readonly ConcurrentDictionary<string, Assembly> _assemblyCache =
+            new ConcurrentDictionary<string, Assembly>(StringComparer.Ordinal);
 
         private static readonly ConcurrentDictionary<string, Assembly> _assemblyNeutralInterfaces =
             new ConcurrentDictionary<string, Assembly>(StringComparer.Ordinal);
@@ -127,6 +127,11 @@ namespace klr.hosting
                     return assembly;
                 }
 
+                if (_assemblyNeutralInterfaces.TryGetValue(name, out assembly))
+                {
+                    return assembly;
+                }
+
                 var loadLock = _assemblyLoadLocks.GetOrAdd(name, new object());
                 try
                 {
@@ -147,6 +152,7 @@ namespace klr.hosting
                         {
 #if ASPNETCORE50
                             ExtractAssemblyNeutralInterfaces(assembly, loadStream);
+
 #endif
                             _assemblyCache[name] = assembly;
                         }
@@ -332,7 +338,6 @@ namespace klr.hosting
                     {
                         continue;
                     }
-
 
                     var neutralAssemblyStream = assembly.GetManifestResourceStream(name);
 
