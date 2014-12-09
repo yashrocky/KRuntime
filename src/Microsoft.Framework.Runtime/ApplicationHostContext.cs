@@ -57,7 +57,10 @@ namespace Microsoft.Framework.Runtime
             AssemblyLoadContextFactory = loadContextFactory ?? new RuntimeLoadContextFactory(ServiceProvider);
 
             // Default services
-            _serviceProvider.Add(typeof(IApplicationEnvironment), new ApplicationEnvironment(Project, targetFramework, configuration));
+            var hostApplicationEnv = serviceProvider.GetService(typeof(IApplicationEnvironment)) as IApplicationEnvironment;
+
+            _serviceProvider.Add(typeof(IApplicationEnvironment), new ApplicationEnvironment(
+                Project, targetFramework, configuration, hostApplicationEnv != null ? hostApplicationEnv.SearchPaths : null));
             _serviceProvider.Add(typeof(IFileWatcher), NoopWatcher.Instance);
             _serviceProvider.Add(typeof(ILibraryManager), LibraryManager);
 

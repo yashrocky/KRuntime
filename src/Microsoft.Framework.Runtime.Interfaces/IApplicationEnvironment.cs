@@ -13,5 +13,6 @@ namespace Microsoft.Framework.Runtime
         string ApplicationBasePath { get; }
         string Configuration { get; }
         FrameworkName RuntimeFramework { get; }
+        string[] SearchPaths { get; }
     }
 }

@@ -14,22 +14,24 @@ namespace Microsoft.Framework.Runtime
         }
 
         public IMetadataProjectReference GetProjectReference(
-            Project project,
+            object project,
             ILibraryKey target,
             Func<ILibraryExport> referenceResolver,
             IList<IMetadataReference> outgoingReferences,
             Func<IAssemblyLoadContext> loadContextResolver = null)
         {
+            var theProject = (Project)project;
+
             // The target framework and configuration are assumed to be correct
             // in the design time process
-            var task = _compiler.Compile(project.ProjectDirectory, target);
+            var task = _compiler.Compile(theProject.ProjectDirectory, target);
 
             foreach (var embeddedReference in task.Result.EmbeddedReferences)
             {
                 outgoingReferences.Add(new EmbeddedMetadataReference(embeddedReference.Key, embeddedReference.Value));
             }
 
-            return new DesignTimeProjectReference(project, task.Result);
+            return new DesignTimeProjectReference(theProject, task.Result);
         }
     }
 }

@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Versioning;
 
 namespace Microsoft.Framework.Runtime
 {
+    [AssemblyNeutral]
     public interface IProjectReferenceProvider
     {
         IMetadataProjectReference GetProjectReference(
-            Project project,
+            object project,
             ILibraryKey target,
             Func<ILibraryExport> referenceResolver,
             IList<IMetadataReference> outgoingReferences,

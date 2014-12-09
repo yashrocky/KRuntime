@@ -18,12 +18,15 @@ namespace klr.host
     {
         private readonly IAssemblyLoaderContainer _container;
         private readonly IAssemblyNeutralInterfaceCache _assemblyNeutralInterfaceCache;
+        private readonly string[] _searchPaths;
 
-        public Bootstrapper(IAssemblyLoaderContainer container, 
-                            IAssemblyNeutralInterfaceCache assemblyNeutralInterfaceCache)
+        public Bootstrapper(IAssemblyLoaderContainer container,
+                            IAssemblyNeutralInterfaceCache assemblyNeutralInterfaceCache,
+                            string[] searchPaths)
         {
             _container = container;
             _assemblyNeutralInterfaceCache = assemblyNeutralInterfaceCache;
+            _searchPaths = searchPaths;
         }
 
         public Task<int> Main(string[] args)
@@ -71,7 +74,8 @@ namespace klr.host
             var applicationEnvironment = new ApplicationEnvironment(applicationBaseDirectory,
                                                                     targetFramework,
                                                                     configuration,
-                                                                    assembly: assembly);
+                                                                    assembly: assembly,
+                                                                    searchPaths: _searchPaths);
 
             CallContextServiceLocator.Locator = new ServiceProviderLocator();
 

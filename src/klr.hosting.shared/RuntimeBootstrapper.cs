@@ -242,7 +242,7 @@ namespace klr.hosting
 
                 var bootstrapperType = assembly.GetType("klr.host.Bootstrapper");
                 var mainMethod = bootstrapperType.GetTypeInfo().GetDeclaredMethod("Main");
-                var bootstrapper = Activator.CreateInstance(bootstrapperType, loaderContainer, assemblyNeutralInterfaceCache);
+                var bootstrapper = Activator.CreateInstance(bootstrapperType, loaderContainer, assemblyNeutralInterfaceCache, searchPaths);
 
                 try
                 {

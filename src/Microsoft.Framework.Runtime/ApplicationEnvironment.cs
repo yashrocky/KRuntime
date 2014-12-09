@@ -14,11 +14,12 @@ namespace Microsoft.Framework.Runtime
         private readonly Project _project;
         private readonly FrameworkName _targetFramework;
 
-        public ApplicationEnvironment(Project project, FrameworkName targetFramework, string configuration)
+        public ApplicationEnvironment(Project project, FrameworkName targetFramework, string configuration, string[] searchPaths)
         {
             _project = project;
             _targetFramework = targetFramework;
             Configuration = configuration;
+            SearchPaths = searchPaths;
         }
 
         public string ApplicationName
@@ -48,6 +49,12 @@ namespace Microsoft.Framework.Runtime
         public FrameworkName RuntimeFramework
         {
             get { return _targetFramework; }
+        }
+
+        public string[] SearchPaths
+        {
+            get;
+            private set;
         }
     }
 }

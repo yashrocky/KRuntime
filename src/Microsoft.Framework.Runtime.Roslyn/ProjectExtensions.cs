@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Runtime.Roslyn
             AssemblyIdentityComparer assemblyIdentityComparer =
 #if ASPNET50
                 VersionUtility.IsDesktop(targetFramework) ?
-                DesktopAssemblyIdentityComparer.Default : 
+                DesktopAssemblyIdentityComparer.Default :
 #endif
                 null;
 

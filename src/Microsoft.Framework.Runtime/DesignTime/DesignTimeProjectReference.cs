@@ -39,7 +39,7 @@ namespace Microsoft.Framework.Runtime
 
         public Assembly Load(IAssemblyLoadContext loadContext)
         {
-            if(_response.Errors.Any())
+            if (_response.Errors.Any())
             {
                 throw new CompilationException(_response.Errors);
             }
