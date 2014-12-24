@@ -362,6 +362,8 @@ namespace Microsoft.Framework.Runtime
             return results;
         }
 
+        private readonly Dictionary<Tuple<string, SemanticVersion>, IPackage> _cache = new Dictionary<Tuple<string, SemanticVersion>, IPackage>();
+
         public IPackage FindCandidate(string name, SemanticVersion version)
         {
             var packages = _repository.FindPackagesById(name);
@@ -378,25 +380,28 @@ namespace Microsoft.Framework.Runtime
                 return null;
             }
 
-            PackageInfo bestMatch = null;
-
-            foreach (var packageInfo in packages)
+            return _cache.GetOrAdd(Tuple.Create(name, version), _ =>
             {
-                if (VersionUtility.ShouldUseConsidering(
-                    current: bestMatch != null ? bestMatch.Version : null,
-                    considering: packageInfo.Version,
-                    ideal: version))
+                PackageInfo bestMatch = null;
+
+                foreach (var packageInfo in packages)
                 {
-                    bestMatch = packageInfo;
+                    if (VersionUtility.ShouldUseConsidering(
+                        current: bestMatch != null ? bestMatch.Version : null,
+                        considering: packageInfo.Version,
+                        ideal: version))
+                    {
+                        bestMatch = packageInfo;
+                    }
                 }
-            }
 
-            if (bestMatch == null)
-            {
-                return null;
-            }
+                if (bestMatch == null)
+                {
+                    return null;
+                }
 
-            return bestMatch.Package;
+                return bestMatch.Package;
+            });
         }
 
         public static string ResolveRepositoryPath(string rootDirectory)

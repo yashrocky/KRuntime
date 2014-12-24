@@ -68,7 +68,7 @@ namespace NuGet
         private static NetPortableProfileCollection BuildPortableProfileCollection()
         {
             var profileCollection = new NetPortableProfileCollection();
-
+#if ONE
             var referenceAssembliesPath = FrameworkReferenceResolver.GetReferenceAssembliesPath();
 
             if (!string.IsNullOrEmpty(referenceAssembliesPath))
@@ -84,7 +84,7 @@ namespace NuGet
                     }
                 }
             }
-
+#endif
             return profileCollection;
         }
 
