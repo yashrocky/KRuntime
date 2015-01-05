@@ -14,12 +14,15 @@ namespace Microsoft.Framework.PackageManager.Restore.NuGet
         private readonly IReport _report;
         private readonly LocalPackageRepository _repository;
 
+        public string Source { get; }
+
         public NuGetPackageFolder(
             string physicalPath,
             IReport report)
         {
             _repository = new LocalPackageRepository(physicalPath, report);
             _report = report;
+            Source = physicalPath;
         }
 
         public Task<IEnumerable<PackageInfo>> FindPackagesByIdAsync(string id)

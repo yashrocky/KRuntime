@@ -17,6 +17,8 @@ namespace Microsoft.Framework.PackageManager.Restore.NuGet
         private readonly IFileSystem _fileSystem;
         private readonly IPackagePathResolver _pathResolver;
 
+        public string Source { get; }
+
         public KpmPackageFolder(
             string physicalPath,
             IReport report)
@@ -27,6 +29,7 @@ namespace Microsoft.Framework.PackageManager.Restore.NuGet
             _fileSystem = new PhysicalFileSystem(physicalPath);
             _pathResolver = new DefaultPackagePathResolver(_fileSystem);
             _report = report;
+            Source = physicalPath;
         }
 
         public Task<IEnumerable<PackageInfo>> FindPackagesByIdAsync(string id)
