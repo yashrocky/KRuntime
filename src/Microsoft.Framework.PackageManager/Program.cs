@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using Microsoft.Framework.PackageManager.DependencyAnalyzer;
 using Microsoft.Framework.PackageManager.Packing;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
@@ -253,6 +254,37 @@ namespace Microsoft.Framework.PackageManager
                     var success = await installCmd.ExecuteCommand();
 
                     return success ? 0 : 1;
+                });
+            });
+
+            app.Command("list", c =>
+            {
+                c.Description = "Print the dependencies of a given project.";
+                var coreclrRoot = c.Option("--coreclr",
+                    "A path to the folder contains CoreCLR assemblies. When the command tries to resolve an assembly under CoreCLR, the command will try to find if there is an assembly in this folder bear the same name. If so the assembly in the CoreCLR folder will be used to resolve dependencies.",
+                    CommandOptionType.SingleValue);
+                var local = c.Option("--local",
+                    "To resolve all the dependencies against local assembly files.",
+                    CommandOptionType.NoValue);
+                var path = c.Argument("[path]", "A path to the project. This path can be either a project.json or a folder contains one project. If omitted, the command will try to resolve the project from current directory.");
+                c.HelpOption("-?|-h|--help");
+
+                c.OnExecute(() =>
+                {
+                    var options = new DependencyListOptions(
+                        path.Value ?? Directory.GetCurrentDirectory(),
+                        local.HasValue(),
+                        coreclrRoot.Value(),
+                        CreateReports(true, quiet: false));
+
+                    if (!options.Valid)
+                    {
+                        options.Reports.Error.WriteLine(string.Format("Unable to locate project by {0}.", options.Path).Red());
+                        return 1;
+                    }
+
+                    var command = new DependencyListCommand(options);
+                    return command.Execute() ? 0 : 1;
                 });
             });
 
