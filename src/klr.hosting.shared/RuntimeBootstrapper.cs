@@ -180,7 +180,8 @@ namespace klr.hosting
                 // Special case for retargetable assemblies on desktop
                 if (a.Name.EndsWith("Retargetable=Yes"))
                 {
-                    return Assembly.Load(a.Name);
+                    var appDomain = (AppDomain)sender;
+                    return Assembly.Load(appDomain.ApplyPolicy(a.Name));
                 }
 
                 return loaderCallback(new AssemblyName(a.Name));
