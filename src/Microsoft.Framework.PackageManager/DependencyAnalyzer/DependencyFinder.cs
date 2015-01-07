@@ -50,9 +50,7 @@ namespace Microsoft.Framework.PackageManager.DependencyAnalyzer
                 {
                     foreach (var loadableAssembly in libraryInformation.LoadableAssemblies)
                     {
-                        IEnumerable<string> dependencies;
-                        dependencies = ResolveLocalDependency(loadableAssembly.Name, assemblyName => missing.Add(assemblyName));
-
+                        var dependencies = ResolveLocalDependency(loadableAssembly.Name, assemblyName => missing.Add(assemblyName));
                         results.AddRange(dependencies);
                     }
                 }
@@ -84,7 +82,7 @@ namespace Microsoft.Framework.PackageManager.DependencyAnalyzer
 
             while (stack.Count > 0)
             {
-                Library current = stack.Pop();
+                var current = stack.Pop();
 
                 if (!results.Add(current.Name))
                 {
@@ -118,8 +116,8 @@ namespace Microsoft.Framework.PackageManager.DependencyAnalyzer
 
             while (stack.Count > 0)
             {
-                string assemblyName = stack.Pop();
-                string assemblyFilePath = _assemblyFilePathResolver(assemblyName);
+                var assemblyName = stack.Pop();
+                var assemblyFilePath = _assemblyFilePathResolver(assemblyName);
 
                 if (assemblyFilePath == null)
                 {

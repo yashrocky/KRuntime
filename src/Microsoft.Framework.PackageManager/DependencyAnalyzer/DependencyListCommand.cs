@@ -19,7 +19,7 @@ namespace Microsoft.Framework.PackageManager.DependencyAnalyzer
         public bool Execute()
         {
             bool result = true;
-            Info("List dependencies for {0}", _options.Project.ProjectFilePath);
+            Info("List dependencies for {0} ({1})", _options.Project.Name, _options.Project.ProjectFilePath);
 
             foreach (var targetFramework in _options.Project.GetTargetFrameworks())
             {
@@ -29,7 +29,6 @@ namespace Microsoft.Framework.PackageManager.DependencyAnalyzer
 
                 IEnumerable<string> unresolved;
                 var dependencies = finder.Find(_options.Local, out unresolved);
-
 
                 Info("Dependencies: ");
                 PrintCollectionInOrder(dependencies);
