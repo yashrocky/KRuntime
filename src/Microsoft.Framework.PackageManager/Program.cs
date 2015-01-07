@@ -9,6 +9,9 @@ using System.Threading;
 using Microsoft.Framework.PackageManager.Packing;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
+using Microsoft.Framework.PackageManager.Packages.Commit;
+using Microsoft.Framework.PackageManager.Packages.Pull;
+using Microsoft.Framework.PackageManager.Packages.Push;
 
 namespace Microsoft.Framework.PackageManager
 {
@@ -253,6 +256,81 @@ namespace Microsoft.Framework.PackageManager
                     var success = await installCmd.ExecuteCommand();
 
                     return success ? 0 : 1;
+                });
+            });
+
+            app.Command("packages", packagesCommand =>
+            {
+                packagesCommand.Description = "Commands related to managing local and remote feed folders";
+                packagesCommand.HelpOption("-?|-h|--help");
+                packagesCommand.OnExecute(() =>
+                {
+                    packagesCommand.ShowHelp();
+                    return 2;
+                });
+
+                packagesCommand.Command("commit", c =>
+                {
+                    c.Description = "Add index files to packages directory";
+                    var argSource = c.Argument("[source]",
+                        "Path to source packages folder, default is current directory");
+                    c.HelpOption("-?|-h|--help");
+
+                    c.OnExecute(() =>
+                    {
+                        var options = new CommitOptions
+                        {
+                            Reports = CreateReports(optionVerbose.HasValue(), quiet: false),
+                            SourcePackages = argSource.Value
+                        };
+                        var command = new CommitCommand(options);
+                        var success = command.Execute();
+                        return success ? 0 : 1;
+                    });
+                });
+
+                packagesCommand.Command("push", c =>
+                {
+                    c.Description = "Incremental copy of files from local packages to remote location";
+                    var argRemote = c.Argument("[remote]", "Path to remote packages folder");
+                    var argSource = c.Argument("[source]",
+                        "Path to source packages folder, default is current directory");
+                    c.HelpOption("-?|-h|--help");
+
+                    c.OnExecute(() =>
+                    {
+                        var options = new PushOptions
+                        {
+                            Reports = CreateReports(optionVerbose.HasValue(), quiet: false),
+                            SourcePackages = argSource.Value,
+                            RemotePackages = argRemote.Value
+                        };
+                        var command = new PushCommand(options);
+                        var success = command.Execute();
+                        return success ? 0 : 1;
+                    });
+                });
+
+                packagesCommand.Command("pull", c =>
+                {
+                    c.Description = "Incremental copy of files from remote location to local packages";
+                    var argRemote = c.Argument("[source]", "Path to source packages folder");
+                    var argSource = c.Argument("[source]",
+                        "Path to source packages folder, default is current directory");
+                    c.HelpOption("-?|-h|--help");
+
+                    c.OnExecute(() =>
+                    {
+                        var options = new PullOptions
+                        {
+                            Reports = CreateReports(optionVerbose.HasValue(), quiet: false),
+                            SourcePackages = argSource.Value,
+                            RemotePackages = argRemote.Value
+                        };
+                        var command = new PullCommand(options);
+                        var success = command.Execute();
+                        return success ? 0 : 1;
+                    });
                 });
             });
 
